@@ -9,7 +9,7 @@ import java.util.NoSuchElementException;
 public class MyTraversableQueueTest {
 
 	@Test(timeout=500)
-	public void testNewQueueIsEmpty() {
+	public void testEmptyQueue() {
 		IterableQueue<Object> testQueue = new TraversableQueue<>();
 		assertEquals(0, testQueue.size());
 	}
@@ -50,7 +50,7 @@ public class MyTraversableQueueTest {
 	
 	
 	@Test(timeout=500)
-	public void testEmptyQueueNext() {
+	public void testNextOnEmptyQueue() {
 		IterableQueue<Object> testQueue = new TraversableQueue<>();
 		assertFalse(testQueue.iterator().hasNext());
 	}
@@ -82,10 +82,8 @@ public class MyTraversableQueueTest {
 		assertTrue(it.hasNext());		
 		assertEquals(1, it.next());
 		assertEquals(2, it.next());
-		assertFalse(it.hasNext());
-		
+		assertFalse(it.hasNext());	
 	}
-	
 	
 	@Test(timeout=500, expected = IllegalStateException.class)
 	public void testMaxLengthExceptions() {

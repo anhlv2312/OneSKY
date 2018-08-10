@@ -58,9 +58,9 @@ public class TraversableQueue<T> implements IterableQueue<T> {
 	}
 	
 	private static final int MAX_LENGTH = 20000;
-	private Node<T> head = null; // head node of the list (or null if empty)
-	private Node<T> tail = null; // last node of the list (or null if empty)
-	private int size = 0; // number of nodes in the list
+	private Node<T> head = null;
+	private Node<T> tail = null;
+	private int size = 0;
 
 	@Override
 	public Iterator<T> iterator() {
@@ -69,9 +69,9 @@ public class TraversableQueue<T> implements IterableQueue<T> {
 
 	@Override
 	public void enqueue(T element) throws IllegalStateException {
-		/* [1 pp. 126] */
 		if (size() == MAX_LENGTH) throw new IllegalStateException();
 
+		/* [1 pp. 126] */
 		Node<T> newNode = new Node<>(element, null); // node will eventually be the tail
 		if (size == 0)
 			head = newNode; // special case: previously empty list
@@ -83,9 +83,10 @@ public class TraversableQueue<T> implements IterableQueue<T> {
 
 	@Override
 	public T dequeue() throws IndexOutOfBoundsException {
-		/* [1 pp. 126] */
+
 		if (size == 0) throw new IndexOutOfBoundsException();
 
+		/* [1 pp. 126] */
 		T element = head.getElement();
 		head = head.getNextNode(); // will become null if list had only one node
 		size--;
