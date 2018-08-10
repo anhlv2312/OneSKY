@@ -23,10 +23,11 @@ public class TraversableQueue<T> implements IterableQueue<T> {
 
 	@Override
 	public T dequeue() throws IndexOutOfBoundsException {
-		if (list.isEmpty())
+		T element = list.removeFirst();
+		if (element == null)
 			throw new IndexOutOfBoundsException();
 		else
-			return list.removeFirst();
+			return element;
 	}
 
 	@Override
@@ -40,27 +41,26 @@ class IterableSinglyLinkedList<T> extends SinglyLinkedList<T> {
 	class SinglyLinkedListIterator implements Iterator<T> {
 
 		Node<T> currentNode = null;
-		Node<T> head;
+		Node<T> nextNode;
 
 		public SinglyLinkedListIterator(Node<T> head) {
-			this.head = head;
+			currentNode = null;
+			nextNode = head;
 		}
 
 		@Override
 		public boolean hasNext() {
-			if (currentNode == null) {
-				return (head != null);
-			} else {
-				return (currentNode.getNext() != null);
-			}
+			return (nextNode != null);
 		}
 
 		@Override
 		public T next() {
-			if (!this.hasNext())
+			if (nextNode == null) 
 				throw new NoSuchElementException();
-			currentNode = currentNode.getNext();
-			return currentNode.getElement();
+			currentNode = nextNode;
+			T element = currentNode.getElement();
+			nextNode = nextNode.getNext();
+			return element;
 		}
 	}
 
@@ -114,27 +114,27 @@ class SinglyLinkedList<E> {
 		return size == 0;
 	}
 
-	// returns (but does not remove) the first element
-	public E first() {
-		if (isEmpty())
-			return null;
-		return head.getElement();
-	}
-
-	// returns (but does not remove) the last element
-	public E last() {
-		if (isEmpty())
-			return null;
-		return tail.getElement();
-	}
-
-	// adds element e to the front of the list
-	public void addFirst(E e) {
-		head = new Node<>(e, head); // create and link a new node
-		if (size == 0)
-			tail = head; // special case: new node becomes tail also
-		size++;
-	}
+//	// returns (but does not remove) the first element
+//	public E first() {
+//		if (isEmpty())
+//			return null;
+//		return head.getElement();
+//	}
+//
+//	// returns (but does not remove) the last element
+//	public E last() {
+//		if (isEmpty())
+//			return null;
+//		return tail.getElement();
+//	}
+//
+//	// adds element e to the front of the list
+//	public void addFirst(E e) {
+//		head = new Node<>(e, head); // create and link a new node
+//		if (size == 0)
+//			tail = head; // special case: new node becomes tail also
+//		size++;
+//	}
 
 	// adds element e to the end of the list
 	public void addLast(E e) {

@@ -3,6 +3,7 @@ package comp3506.assn1.adts;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 public class MyTraversableQueueTest {
@@ -23,7 +24,7 @@ public class MyTraversableQueueTest {
 	}
 	
 	@Test(timeout=500)
-	public void testDequeueEmptyQueue() {
+	public void testDequeueOneItem() {
 		IterableQueue<Object> testQueue = new TraversableQueue<>();
 		Object object = new Object();
 		testQueue.enqueue(object);
@@ -32,11 +33,28 @@ public class MyTraversableQueueTest {
 	}
 	
 	@Test(timeout=500, expected = IndexOutOfBoundsException.class)
-	public void testIterator() {
+	public void testDequeueMultipleItem() {
 		IterableQueue<Object> testQueue = new TraversableQueue<>();
+		testQueue.enqueue(new Object());
+		testQueue.enqueue(new Object());
+		testQueue.dequeue();
+		testQueue.dequeue();
 		testQueue.dequeue();
 	}	
 
+	@Test(timeout=500, expected = IndexOutOfBoundsException.class)
+	public void testDequeueEmptyQueue() {
+		IterableQueue<Object> testQueue = new TraversableQueue<>();
+		testQueue.dequeue();
+	}	
+	
+	
+	@Test(timeout=500)
+	public void testEmptyQueueNext() {
+		IterableQueue<Object> testQueue = new TraversableQueue<>();
+		assertFalse(testQueue.iterator().hasNext());
+	}
+	
 	@Test(timeout=500, expected = NoSuchElementException.class)
 	public void testEmptyQueueIteratorExceptions() {
 		IterableQueue<Object> testQueue = new TraversableQueue<>();
@@ -54,15 +72,18 @@ public class MyTraversableQueueTest {
 	}
 	
 	@Test(timeout=500)
-	public void testIteratorExceptions() {
+	public void testIteratorNext() {
 		IterableQueue<Object> testQueue = new TraversableQueue<>();
-		Object object = new Object();
-		testQueue.enqueue(new Object());
-		testQueue.enqueue(object);
-		assertTrue(testQueue.iterator().hasNext());
-		assertEquals(object, testQueue.iterator().next());
-		testQueue.iterator().next();
-		assertEquals(object, testQueue.iterator().next());
+		testQueue.enqueue(1);
+		testQueue.enqueue(2);
+		assertEquals(2, testQueue.size());
+
+		Iterator<Object> it = testQueue.iterator();
+		assertTrue(it.hasNext());		
+		assertEquals(1, it.next());
+		assertEquals(2, it.next());
+		assertFalse(it.hasNext());
+		
 	}
 	
 	
