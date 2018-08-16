@@ -35,7 +35,7 @@ public class TraversableQueue<T> implements IterableQueue<T> {
 	
 	class TraversableQueueIterator<E> implements Iterator<E> {
 		private Node<E> currentNode = null;
-		private Node<E> nextNode;
+		private Node<E> nextNode = null;
 		
 		public TraversableQueueIterator(Node<E> firstNode) {
 			this.nextNode = firstNode;
@@ -100,11 +100,6 @@ public class TraversableQueue<T> implements IterableQueue<T> {
 		return size;
 	}
 }
-
-/* REFERENCE 
- * [1]	M. T. Goodrich, R. Tamassia, and M. H. Goldwasser, 
- * 		Data structures and algorithms in Java. John Wiley & Sons, 2014.
- */
 
 
 
