@@ -13,6 +13,8 @@ public class MyBoundedCubeTest {
 		Object element = new Object();
 		testCube.add(1, 1, 1, element);
 		assertThat("Only element at a position was not returned.", testCube.get(1, 1, 1), is(equalTo(element)));
+		testCube.add(4, 4, 1, element);
+		assertThat("Only element at a position was not returned.", testCube.get(4, 4, 1), is(equalTo(element)));
 	}
 	
 	@Test(expected = IndexOutOfBoundsException.class)
@@ -112,7 +114,7 @@ public class MyBoundedCubeTest {
 		Cube<Object> testCube = new BoundedCube<>(5321, 3428, 35);
 		testCube.add(1, 1, 1, new Object());
 		testCube.add(3, 3, 1, new Object());
-		testCube.add(2, 2, 1, new Object());
+		testCube.add(1, 1, 1, new Object());
 	}
 	
 	
