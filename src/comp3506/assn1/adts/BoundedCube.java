@@ -19,7 +19,7 @@ public class BoundedCube<T> implements Cube<T> {
 	
 	int lenght, breadth, height;
 	
-	OrderedLinkedList<TraversableQueue<T>> cells;
+	Object[] layers = new Object[36];
 	
 	/**
 	 * 
@@ -38,7 +38,9 @@ public class BoundedCube<T> implements Cube<T> {
 		this.breadth = breadth;
 		this.height = height;
 
-		cells = new OrderedLinkedList<>(length, breadth, height);
+		for (int z = 0; z <= height; z++) {
+			layers[z] = new OrderedLinkedList<TraversableQueue<T>>(length, breadth);
+		}
 		
 	}
 
@@ -57,11 +59,11 @@ public class BoundedCube<T> implements Cube<T> {
 	@Override
 	public void add(int x, int y, int z, T element) throws IndexOutOfBoundsException {
 		Position position = convertPosition(x, y, z);
-		TraversableQueue<T> queue = cells.getElement(position);		
+		TraversableQueue<T> queue = ((OrderedLinkedList<TraversableQueue<T>>)layers[z]).getElement(position);		
 		if (queue == null) {
 			TraversableQueue<T> newQueue = new TraversableQueue<T>();
 			newQueue.enqueue(element);
-			cells.setElement(position, newQueue);
+			((OrderedLinkedList<TraversableQueue<T>>)layers[z]).setElement(position, newQueue);
 		} else {
 			queue.enqueue(element);
 		}
@@ -82,7 +84,7 @@ public class BoundedCube<T> implements Cube<T> {
 	@Override
 	public T get(int x, int y, int z) throws IndexOutOfBoundsException {
 		Position position = convertPosition(x, y, z);
-		TraversableQueue<T> queue = cells.getElement(position);
+		TraversableQueue<T> queue = ((OrderedLinkedList<TraversableQueue<T>>)layers[z]).getElement(position);
 		if (queue == null) {
 			return null;
 		}
@@ -104,7 +106,7 @@ public class BoundedCube<T> implements Cube<T> {
 	@Override
 	public IterableQueue<T> getAll(int x, int y, int z) throws IndexOutOfBoundsException {
 		Position position = convertPosition(x, y, z);
-		return cells.getElement(position);
+		return ((OrderedLinkedList<TraversableQueue<T>>)layers[z]).getElement(position);
 	}
 
 	/**
@@ -122,7 +124,7 @@ public class BoundedCube<T> implements Cube<T> {
 	@Override
 	public boolean isMultipleElementsAt(int x, int y, int z) throws IndexOutOfBoundsException {
 		Position position = convertPosition(x, y, z);
-		TraversableQueue<T> cell = cells.getElement(position);
+		TraversableQueue<T> cell = ((OrderedLinkedList<TraversableQueue<T>>)layers[z]).getElement(position);
 		if (cell == null) {
 			return false;
 		} else { 
@@ -146,7 +148,7 @@ public class BoundedCube<T> implements Cube<T> {
 	@Override
 	public boolean remove(int x, int y, int z, T element) throws IndexOutOfBoundsException {
 		Position position = convertPosition(x, y, z);
-		TraversableQueue<T> queue = cells.getElement(position);
+		TraversableQueue<T> queue = ((OrderedLinkedList<TraversableQueue<T>>)layers[z]).getElement(position);
 		if (queue == null) {
 			return false;
 		}
@@ -157,9 +159,9 @@ public class BoundedCube<T> implements Cube<T> {
 			}
 		}
 		if (newQueue.size() == 0) {
-			cells.removeNode(position);
+			((OrderedLinkedList<TraversableQueue<T>>)layers[z]).removeNode(position);
 		} else {
-			cells.setElement(position, newQueue);
+			((OrderedLinkedList<TraversableQueue<T>>)layers[z]).setElement(position, newQueue);
 		}
 		return (newQueue.size() < queue.size());
 	}
@@ -178,7 +180,7 @@ public class BoundedCube<T> implements Cube<T> {
 	@Override
 	public void removeAll(int x, int y, int z) throws IndexOutOfBoundsException {
 		Position position = convertPosition(x, y, z);
-		cells.setElement(position, null);
+		((OrderedLinkedList<TraversableQueue<T>>)layers[z]).setElement(position, null);
 	}
 
 	/**
@@ -189,14 +191,16 @@ public class BoundedCube<T> implements Cube<T> {
 	 */
 	@Override
 	public void clear() {
-		cells.clear();
+		for (int z = 0; z <= this.height; z++) {
+			((OrderedLinkedList<TraversableQueue<T>>)layers[z]).clear();
+		}
 	}
 	
 	private Position convertPosition(int x, int y, int z) throws IndexOutOfBoundsException {
 		if ((x < 0 || y < 0 || z < 0) || (x > this.lenght || y > this.breadth || z > this.height)) {
 			throw new IndexOutOfBoundsException();
 		}
-		return new Position(x, y, z);
+		return new Position(x, y);
 	}
 	
 	/**
@@ -205,26 +209,19 @@ public class BoundedCube<T> implements Cube<T> {
 	 */
 	private static class Position implements Comparable<Position> {
 		/* [1 pp. 227] */
-		private int x, y, z;
+		private int x, y;
 		
-		public Position(int x, int y, int z) {
+		public Position(int x, int y) {
 			this.x = x;
 			this.y = y;
-			this.z = z;
 		}
 		
 		// Compare with other position, z axis has the highest weight, then y and then x,
 		@Override
 		public int compareTo(Position position) {
-			// Compare the 
-			if (this.z != position.z) {
-				return this.z - position.z;
-			}
-			
 			if (this.y != position.y) {
 				return this.y - position.y;
 			} 
-			
 			return this.x - position.x;
 		}
 	
@@ -280,6 +277,7 @@ public class BoundedCube<T> implements Cube<T> {
 	
 	/**
 	 * Singly Linked List data structure that provides access to its nodes using position
+	 * This class is used to represent a layers of the air space
 	 *
 	 * @param <E> The type of element held in the List.
 	 *
@@ -289,10 +287,10 @@ public class BoundedCube<T> implements Cube<T> {
 		private Node<E> header;
 		private Node<E> trailer;
 		
-		public OrderedLinkedList(int x, int y, int z) {
+		public OrderedLinkedList(int x, int y) {
 			/* [1 pp. 277] */
-			header = new Node<> (new Position(0,0,0), null, null, null);
-			trailer = new Node<> (new Position(x,y,z), null, null, null);
+			header = new Node<> (new Position(0,0), null, null, null);
+			trailer = new Node<> (new Position(x,y), null, null, null);
 			header.setNext(trailer);
 			trailer.setPrevious(header);
 		}
