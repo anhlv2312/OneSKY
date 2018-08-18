@@ -19,7 +19,7 @@ public class BoundedCube<T> implements Cube<T> {
 	
 	int lenght, breadth, height;
 	
-	LinkedPositionalList<TraversableQueue<T>> cells;
+	OrderedLinkedList<TraversableQueue<T>> cells;
 	
 	/**
 	 * 
@@ -38,7 +38,7 @@ public class BoundedCube<T> implements Cube<T> {
 		this.breadth = breadth;
 		this.height = height;
 
-		cells = new LinkedPositionalList<>(length, breadth, height);
+		cells = new OrderedLinkedList<>(length, breadth, height);
 		
 	}
 
@@ -228,12 +228,11 @@ public class BoundedCube<T> implements Cube<T> {
 			return this.x - position.x;
 		}
 		
-		public static Position calculateMiddlePoint(Position start, Position end) {
-			int xx = (start.x + end.x)/2;
-			int yy = (start.y + end.y)/2;
-			int zz = (start.z + end.z)/2;
-			return new Position(xx , yy, zz);
-			
+		public static Position calculateMiddle(Position startPosition, Position endPosition) {
+			int x = (startPosition.x + endPosition.x)/2;
+			int y = (startPosition.y + endPosition.y)/2;
+			int z = (startPosition.z + endPosition.z)/2;
+			return new Position(x, y, z);
 		}
 	}
 	
@@ -291,28 +290,17 @@ public class BoundedCube<T> implements Cube<T> {
 	 * @param <E> The type of element held in the List.
 	 *
 	 */
-	private class LinkedPositionalList<E> {
+	private class OrderedLinkedList<E> {
 	
 		private Node<E> header;
 		private Node<E> trailer;
 		
-		public LinkedPositionalList(int x, int y, int z) {
+		public OrderedLinkedList(int x, int y, int z) {
 			/* [1 pp. 277] */
 			header = new Node<> (new Position(0,0,0), null, null, null);
 			trailer = new Node<> (new Position(x,y,z), null, null, null);
 			header.setNext(trailer);
 			trailer.setPrevious(header);
-		}
-		
-		private Node<E> binarySearch(Position position, Node<E> startNode, Node<E> endNode) {
-			Node<E> currentNode = header;
-			while (currentNode.getNext() != null) {
-				if (position.compareTo(currentNode.getPosition()) == 0) {
-					return currentNode;
-				}
-				currentNode = currentNode.getNext();
-			} 
-			return null;			
 		}
 		
 		private Node<E> findNode(Position position) {
@@ -362,15 +350,6 @@ public class BoundedCube<T> implements Cube<T> {
 			currentNode.getPrev().setNext(currentNode.getNext());
 		}
 		
-		public Node<E> addNode(Position position, Node<E> previousNode, E element) {
-			Node<E> newNode = new Node<E>(position, element, null, null);
-			newNode.setPrevious(previousNode);
-			newNode.setNext(previousNode.getNext());
-			previousNode.setNext(newNode);
-			return newNode;
-			
-		}
-		
 		public Node<E> addNodeAfter(Position position, Node<E> previousNode, E element) {
 			Node<E> newNode = new Node<E>(position, element, null, null);
 			newNode.setPrevious(previousNode);
@@ -397,7 +376,11 @@ public class BoundedCube<T> implements Cube<T> {
  * therefore, we need a data structure that can only hold the information of the cells 
  * that contains at least one aircraft, instead of predefined the array for the whole air space.
  *
- * The approach that I used is to implement a Ordered Linked List and use binary search for find an item
+ * The approach that I used is to implement a Ordered Linked List and use linear search for 
+ * finding an item
+ * 
+ * One other approach is use a 3D array to store all the cells of the air space, however, it is 
+ * very memory consuming as we have to pre-allocate memory for every single cell.
  * 
  * REFERENCE 
  * [1]	M. T. Goodrich, R. Tamassia, and M. H. Goldwasser, 
