@@ -8,13 +8,13 @@ import java.util.NoSuchElementException;
 
 public class MyTraversableQueueTest {
 
-	@Test(timeout=500)
+	@Test
 	public void testEmptyQueue() {
 		IterableQueue<Object> testQueue = new TraversableQueue<>();
 		assertEquals(0, testQueue.size());
 	}
 
-	@Test(timeout=500)
+	@Test
 	public void testEnqueueDequeue() {
 		IterableQueue<Object> testQueue = new TraversableQueue<>();
 		Object object = new Object();
@@ -23,7 +23,7 @@ public class MyTraversableQueueTest {
 		assertEquals(object, testQueue.dequeue());
 	}
 	
-	@Test(timeout=500)
+	@Test
 	public void testDequeueOneItem() {
 		IterableQueue<Object> testQueue = new TraversableQueue<>();
 		Object object = new Object();
@@ -32,7 +32,7 @@ public class MyTraversableQueueTest {
 		assertEquals(object, testQueue.dequeue());
 	}
 	
-	@Test(timeout=500, expected = IndexOutOfBoundsException.class)
+	@Test(expected = IndexOutOfBoundsException.class)
 	public void testDequeueMultipleItem() {
 		IterableQueue<Object> testQueue = new TraversableQueue<>();
 		testQueue.enqueue(new Object());
@@ -42,26 +42,26 @@ public class MyTraversableQueueTest {
 		testQueue.dequeue();
 	}	
 
-	@Test(timeout=500, expected = IndexOutOfBoundsException.class)
+	@Test(expected = IndexOutOfBoundsException.class)
 	public void testDequeueEmptyQueue() {
 		IterableQueue<Object> testQueue = new TraversableQueue<>();
 		testQueue.dequeue();
 	}	
 	
 	
-	@Test(timeout=500)
+	@Test
 	public void testNextOnEmptyQueue() {
 		IterableQueue<Object> testQueue = new TraversableQueue<>();
 		assertFalse(testQueue.iterator().hasNext());
 	}
 	
-	@Test(timeout=500, expected = NoSuchElementException.class)
+	@Test(expected = NoSuchElementException.class)
 	public void testEmptyQueueIteratorExceptions() {
 		IterableQueue<Object> testQueue = new TraversableQueue<>();
 		testQueue.iterator().next();
 	}
 	
-	@Test(timeout=500, expected = NoSuchElementException.class)
+	@Test(expected = NoSuchElementException.class)
 	public void testDequeueIteratorExceptions() {
 		IterableQueue<Object> testQueue = new TraversableQueue<>();
 		Object object = new Object();
@@ -71,7 +71,7 @@ public class MyTraversableQueueTest {
 		assertEquals(object, testQueue.iterator().next());
 	}
 	
-	@Test(timeout=500)
+	@Test
 	public void testIteratorNext() {
 		IterableQueue<Object> testQueue = new TraversableQueue<>();
 		testQueue.enqueue(1);
@@ -85,7 +85,7 @@ public class MyTraversableQueueTest {
 		assertFalse(it.hasNext());	
 	}
 	
-	@Test(timeout=500, expected = IllegalStateException.class)
+	@Test(expected = IllegalStateException.class)
 	public void testMaxLengthExceptions() {
 		IterableQueue<Object> testQueue = new TraversableQueue<>();
 		for (int i=0; i < 20000; i++)

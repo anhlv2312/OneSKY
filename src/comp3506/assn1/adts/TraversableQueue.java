@@ -7,10 +7,13 @@ import java.util.NoSuchElementException;
  * TraversableQueue implement IterableQueue with ability to 
  * iterate over all the elements in the queue.
  * 
+ * Memory Usage Efficiency: O(n)
+ * (n is the number of aircraft)
+ * 
  * @author Vu Anh LE <s4490763@student.uq.edu.au>
  *
  * @param <T> Type of the elements held in the queue.
- *
+ *  
  */
 public class TraversableQueue<T> implements IterableQueue<T> {
 	
@@ -30,14 +33,16 @@ public class TraversableQueue<T> implements IterableQueue<T> {
 	/**
 	 * Add a new element to the end of the queue.
 	 * 
+	 * Time-complexity O(1)
+	 * (n is the number of aircraft)
+	 * 
 	 * @param element The element to be added to the queue.
 	 * @throws IllegalStateException Queue cannot accept a new element (e.g. queue space is full).
-	 * 
-	 * Time-complexity O(1)
 	 * 
 	 */
 	@Override
 	public void enqueue(T element) throws IllegalStateException {
+		
 		if (size() == MAX_LENGTH) throw new IllegalStateException();
 		Node<T> newNode = new Node<>(element, null); 
 		if (size == 0)
@@ -51,10 +56,10 @@ public class TraversableQueue<T> implements IterableQueue<T> {
 	/**
 	 * Remove and return the element at the head of the queue.
 	 * 
-	 * @return Element at that was at the head of the queue.
-	 * @throws IndexOutOfBoundsException Queue is empty and nothing can be dequeued.
-	 * 
 	 * Time-complexity O(1)
+	 * 
+	 * @return Element at that was at the head of the queue.
+	 * @throws IndexOutOfBoundsException Queue is empty and nothing can be dequeued
 	 * 
 	 */
 	@Override
@@ -140,9 +145,14 @@ public class TraversableQueue<T> implements IterableQueue<T> {
 
 
 /**
- * Design choices justification
+ * Design choices justification:
  *  
- * Implement the Queue with a Singly Linked List
+ * Since it may have only a few aircraft in one cell, however, the maximum number could be 20.000, 
+ * So it would be memory consuming if we predefinde a huge array to store information. Instead,
+ * I choose to implement a queue use a Singly Linked List [1] as the data structure.
+ * 
+ * With this design choice, we can access enqueue and dequeue with the time complexity of O(1)
+ * 
  * 
  * REFERENCE 
  * [1]	M. T. Goodrich, R. Tamassia, and M. H. Goldwasser, 

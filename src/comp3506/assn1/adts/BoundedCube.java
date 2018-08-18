@@ -1,10 +1,15 @@
 package comp3506.assn1.adts;
 
+import java.util.Iterator;
+
 /**
  * A three-dimensional data structure that holds items in a positional
  * relationship to each other. Each cell in the data structure can hold multiple
  * items. A bounded cube has a specified maximum size in each dimension. The
  * root of each dimension is indexed from zero.
+ * 
+ * Memory Usage Efficiency: O(n)
+ * (n is the number of aircraft)
  * 
  * @author Vu Anh LE <s4490763@student.uq.edu.au>
  *
@@ -30,7 +35,9 @@ public class BoundedCube<T> implements Cube<T> {
 	 *  	positive.
 	 */
 	public BoundedCube(int length, int breadth, int height) throws IllegalArgumentException {
-		if ((length <= 0 || breadth <= 0 || height <= 0) || (length > MAX_X || breadth > MAX_Y || height > MAX_Z)) {
+		// Validate the aguments
+		if ((length <= 0 || breadth <= 0 || height <= 0) 
+				|| (length > MAX_X || breadth > MAX_Y || height > MAX_Z)) {
 			throw new IllegalArgumentException();
 		}
 		
@@ -39,6 +46,7 @@ public class BoundedCube<T> implements Cube<T> {
 		this.height = height;
 
 		for (int z = 0; z <= height; z++) {
+			// Initialize layers of the air space, each layer is 1km height
 			layers[z] = new OrderedLinkedList<TraversableQueue<T>>(length, breadth);
 		}
 		
@@ -47,24 +55,30 @@ public class BoundedCube<T> implements Cube<T> {
 	/**
 	 * Add an element at a fixed position.
 	 * 
+	 * Time-complexity O(n)
+	 * (n is the number of aircraft)
+	 * 
 	 * @param element The element to be added at the indicated position.
 	 * @param x X Coordinate of the position of the element.
 	 * @param y Y Coordinate of the position of the element.
 	 * @param z Z Coordinate of the position of the element.
 	 * @throws IndexOutOfBoundsException If x, y or z coordinates are out of bounds.
 	 * 
-	 * Time-complexity O(n)
-	 * 
 	 */
 	@Override
 	public void add(int x, int y, int z, T element) throws IndexOutOfBoundsException {
 		Position position = convertPosition(x, y, z);
-		TraversableQueue<T> queue = ((OrderedLinkedList<TraversableQueue<T>>)layers[z]).getElement(position);		
+		// Get the queue form that position
+		TraversableQueue<T> queue = getLayer(z).getElement(position);	
 		if (queue == null) {
+			// If there is no queue in that position, initialize a new Queue
 			TraversableQueue<T> newQueue = new TraversableQueue<T>();
+			// Enqueue the element to the created queue
 			newQueue.enqueue(element);
-			((OrderedLinkedList<TraversableQueue<T>>)layers[z]).setElement(position, newQueue);
+			// Add the queue to that position
+			getLayer(z).setElement(position, newQueue);
 		} else {
+			// Enqueue the element
 			queue.enqueue(element);
 		}
 	}
@@ -72,27 +86,34 @@ public class BoundedCube<T> implements Cube<T> {
 	/**
 	 * Return the 'oldest' element at the indicated position.
 	 * 
+	 * Time-complexity O(n)
+	 * (n is the number of aircraft)
+	 * 
 	 * @param x X Coordinate of the position of the element.
 	 * @param y Y Coordinate of the position of the element.
 	 * @param z Z Coordinate of the position of the element.
 	 * @return 'Oldest' element at this position or null if no elements at the indicated position.
 	 * @throws IndexOutOfBoundsException If x, y or z coordinates are out of bounds.
 	 * 
-	 * Time-complexity O(n)
-	 * 
 	 */
 	@Override
 	public T get(int x, int y, int z) throws IndexOutOfBoundsException {
 		Position position = convertPosition(x, y, z);
-		TraversableQueue<T> queue = ((OrderedLinkedList<TraversableQueue<T>>)layers[z]).getElement(position);
+		TraversableQueue<T> queue = getLayer(z).getElement(position);
 		if (queue == null) {
 			return null;
 		}
-		return queue.dequeue();
+		
+		Iterator iterator = queue.iterator();
+		return (T)iterator.next();
+		
 	}
 
 	/**
 	 * Return all the elements at the indicated position.
+	 * 
+	 * Time-complexity O(n)
+	 * (n is the number of aircraft)
 	 * 
 	 * @param x X Coordinate of the position of the element(s).
 	 * @param y Y Coordinate of the position of the element(s).
@@ -100,17 +121,18 @@ public class BoundedCube<T> implements Cube<T> {
 	 * @return An IterableQueue of all elements at this position or null if no elements at the indicated position.
 	 * @throws IndexOutOfBoundsException If x, y or z coordinates are out of bounds.
 	 * 
-	 * Time-complexity O(n)
-	 *  
 	 */
 	@Override
 	public IterableQueue<T> getAll(int x, int y, int z) throws IndexOutOfBoundsException {
 		Position position = convertPosition(x, y, z);
-		return ((OrderedLinkedList<TraversableQueue<T>>)layers[z]).getElement(position);
+		return getLayer(z).getElement(position);
 	}
 
 	/**
 	 * Indicates whether there are more than one elements at the indicated position.
+	 * 
+	 * Time-complexity O(n)
+	 * (n is the number of aircraft)
 	 * 
 	 * @param x X Coordinate of the position of the element(s).
 	 * @param y Y Coordinate of the position of the element(s).
@@ -118,13 +140,11 @@ public class BoundedCube<T> implements Cube<T> {
 	 * @return true if there are more than one elements at the indicated position, false otherwise.
 	 * @throws IndexOutOfBoundsException If x, y or z coordinates are out of bounds.
 	 * 
-	 * Time-complexity O(n)
-	 * 
 	 */
 	@Override
 	public boolean isMultipleElementsAt(int x, int y, int z) throws IndexOutOfBoundsException {
 		Position position = convertPosition(x, y, z);
-		TraversableQueue<T> cell = ((OrderedLinkedList<TraversableQueue<T>>)layers[z]).getElement(position);
+		TraversableQueue<T> cell = getLayer(z).getElement(position);
 		if (cell == null) {
 			return false;
 		} else { 
@@ -135,6 +155,9 @@ public class BoundedCube<T> implements Cube<T> {
 	/**
 	 * Removes the specified element at the indicated position.
 	 * 
+	 * Time-complexity O(n)
+	 * (n is the number of aircraft)
+	 * 
 	 * @param element The element to be removed from the indicated position.
 	 * @param x X Coordinate of the position.
 	 * @param y Y Coordinate of the position.
@@ -142,45 +165,54 @@ public class BoundedCube<T> implements Cube<T> {
 	 * @return true if the element was removed from the indicated position, false otherwise.
 	 * @throws IndexOutOfBoundsException If x, y or z coordinates are out of bounds.
 	 * 
-	 * Time-complexity O(n)
-	 * 
 	 */
 	@Override
 	public boolean remove(int x, int y, int z, T element) throws IndexOutOfBoundsException {
 		Position position = convertPosition(x, y, z);
-		TraversableQueue<T> queue = ((OrderedLinkedList<TraversableQueue<T>>)layers[z]).getElement(position);
+		
+		// Get the queue in the position
+		TraversableQueue<T> queue = getLayer(z).getElement(position);
 		if (queue == null) {
 			return false;
 		}
+		
+		// Initialize a new queue
 		TraversableQueue<T> newQueue = new TraversableQueue<T>();
 		for (T e: queue) {
+			// enqueue all the items from old queue to the newQueue except the given element
 			if (!e.equals(element)) {
 				newQueue.enqueue(e);
 			}
 		}
 		if (newQueue.size() == 0) {
-			((OrderedLinkedList<TraversableQueue<T>>)layers[z]).removeNode(position);
+			// If there is no element left, then remove the Node
+			getLayer(z).removeNode(position);
 		} else {
-			((OrderedLinkedList<TraversableQueue<T>>)layers[z]).setElement(position, newQueue);
+			// Else add the new queue to that position
+			getLayer(z).setElement(position, newQueue);
 		}
+		
+		// Return true if the size is reduced
 		return (newQueue.size() < queue.size());
 	}
 
 	/**
 	 * Removes all elements at the indicated position.
 	 * 
+	 * Time-complexity O(n)
+	 * (n is the number of aircraft)
+	 * 
 	 * @param x X Coordinate of the position.
 	 * @param y Y Coordinate of the position.
 	 * @param z Z Coordinate of the position.
 	 * @throws IndexOutOfBoundsException If x, y or z coordinates are out of bounds.
 	 * 
-	 * Time-complexity O(n)
-	 * 
 	 */
 	@Override
 	public void removeAll(int x, int y, int z) throws IndexOutOfBoundsException {
 		Position position = convertPosition(x, y, z);
-		((OrderedLinkedList<TraversableQueue<T>>)layers[z]).setElement(position, null);
+		// Set the element of the node in that position to null
+		getLayer(z).setElement(position, null);
 	}
 
 	/**
@@ -192,15 +224,20 @@ public class BoundedCube<T> implements Cube<T> {
 	@Override
 	public void clear() {
 		for (int z = 0; z <= this.height; z++) {
-			((OrderedLinkedList<TraversableQueue<T>>)layers[z]).clear();
+			getLayer(z).clear();
 		}
 	}
 	
+	// Validate the x,y,z input and return the position object
 	private Position convertPosition(int x, int y, int z) throws IndexOutOfBoundsException {
 		if ((x < 0 || y < 0 || z < 0) || (x > this.lenght || y > this.breadth || z > this.height)) {
 			throw new IndexOutOfBoundsException();
 		}
 		return new Position(x, y);
+	}
+	
+	private OrderedLinkedList<TraversableQueue<T>> getLayer(int layerIndex) {
+		return (OrderedLinkedList<TraversableQueue<T>>)layers[layerIndex];
 	}
 	
 	/**
@@ -224,7 +261,13 @@ public class BoundedCube<T> implements Cube<T> {
 			} 
 			return this.x - position.x;
 		}
-	
+		
+		public static Position calculateMiddle(Position startPosition, Position endPosition) {
+			int x = (endPosition.x - startPosition.x)/2;
+			int y = (endPosition.y - startPosition.y)/2;
+			return new Position(x, y);
+		}
+		
 	}
 	
 	/**
@@ -254,7 +297,7 @@ public class BoundedCube<T> implements Cube<T> {
 			return nextNode;
 		}
 		
-		public Node<E> getPrev() {
+		public Node<E> getPrevious() {
 			return previousNode;
 		}
 
@@ -296,6 +339,15 @@ public class BoundedCube<T> implements Cube<T> {
 		}
 		
 		private Node<E> findNode(Position position) {
+			Position middle = Position.calculateMiddle(header.getPosition(), trailer.getPosition());
+			if (position.compareTo(middle) <= 0) {
+				return findNodeFromHead(position);
+			} else {
+				return findNodeFromTail(position);
+			}			
+		}
+		
+		private Node<E> findNodeFromHead(Position position) {
 			Node<E> currentNode = header;
 			while (currentNode.getNext() != null) {
 				if (position.compareTo(currentNode.getPosition()) == 0) {
@@ -303,19 +355,35 @@ public class BoundedCube<T> implements Cube<T> {
 				}
 				currentNode = currentNode.getNext();
 			} 
-			return null;			
+			return null;	
 		}
 		
-		public Node<E> findPreviousNode(Position position) {
+		private Node<E> findNodeFromTail(Position position) {
+			Node<E> currentNode = trailer;
+			while (currentNode.getPrevious() != null) {
+				if (position.compareTo(currentNode.getPosition()) == 0) {
+					return currentNode;
+				}
+				currentNode = currentNode.getPrevious();
+			} 
+			return null;	
+		}
+		
+		private Node<E> findPreviousNode(Position position) {
 			Node<E> currentNode = header;
 			Node<E> previousNode = header;
-			while (currentNode.getNext() != null) {
+			while ((currentNode.getNext() != null) && (position.compareTo(currentNode.getPosition()) <= 0)) {
 				if (position.compareTo(currentNode.getPosition()) < 0) {
 					previousNode = currentNode;
 				}
 				currentNode = currentNode.getNext();
 			} 
-			return previousNode;			
+			return previousNode;		
+		}
+		
+		public void removeNode(Position position) {
+			Node<E> currentNode = this.findNode(position);
+			currentNode.getPrevious().setNext(currentNode.getNext());
 		}
 		
 		public E getElement(Position position) {
@@ -335,11 +403,6 @@ public class BoundedCube<T> implements Cube<T> {
 			} else {
 				currentNode.setElement(element);
 			}
-		}
-		
-		public void removeNode(Position position) {
-			Node<E> currentNode = this.findNode(position);
-			currentNode.getPrev().setNext(currentNode.getNext());
 		}
 		
 		public Node<E> addNodeAfter(Position position, Node<E> previousNode, E element) {
@@ -362,17 +425,32 @@ public class BoundedCube<T> implements Cube<T> {
 }
 
 /**
- * Design choices justification
+ * Design choices justification:
  * 
  * Because the air space is very big, and the number of the aircraft is limited by 20000, 
  * therefore, we need a data structure that can only hold the information of the cells 
  * that contains at least one aircraft, instead of predefined the array for the whole air space.
- *
- * The approach that I used is to implement a Ordered Linked List and use linear search for 
- * finding an item
+ * 
+ * The approach that I used is to implement a Ordered Doubly Linked List [1] and use 
+ * two ways linear search to find the item, I first calculate the middle point, 
+ * and check if the position is closer the head or tail then use the appropriate method
+ * to find the element. This approach will give the run-time efficiency of O(n) and 
+ * memory space efficiency of O(n)
+ * 
+ * I also noticed that the air space is only 35km height, then I decided to use an Array of the list
+ * to represent the layers of the air space to reduce the maximum length of the List
+ * 
+ * I've conducted some tests to evaluate the performance of the "Array of Layers" method, and 
+ * the result shows that, it is 4 times more efficient than the Non-Layer method. (The test is to
+ * add 15.000 objects to arbitrary positions) this method does not require much more memory, because
+ * it's only store the maximum of 35 references of every layer.
  * 
  * One other approach is use a 3D array to store all the cells of the air space, however, it is 
- * very memory consuming as we have to pre-allocate memory for every single cell.
+ * very memory consuming as we have to pre-allocate memory for every single cell, it also takes time
+ * to initialize the system, especially to test a very single case while performing the unit tests.
+ * 
+ * There may be a solution using tree data structure, however, it would take time to research 
+ * and implement
  * 
  * REFERENCE 
  * [1]	M. T. Goodrich, R. Tamassia, and M. H. Goldwasser, 

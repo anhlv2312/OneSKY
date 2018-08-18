@@ -7,7 +7,7 @@ import org.junit.Test;
 
 public class MyBoundedCubeTest {
 	
-	@Test(timeout=500)
+	@Test
 	public void testGetWithOneElement() {
 		Cube<Object> testCube = new BoundedCube<>(5, 5, 5);
 		Object element = new Object();
@@ -15,14 +15,14 @@ public class MyBoundedCubeTest {
 		assertThat("Only element at a position was not returned.", testCube.get(1, 1, 1), is(equalTo(element)));
 	}
 	
-	@Test(timeout=500, expected = IndexOutOfBoundsException.class)
+	@Test(expected = IndexOutOfBoundsException.class)
 	public void testPosition() {
 		Cube<Object> testCube = new BoundedCube<>(5, 5, 5);
 		testCube.add(5, 6, 5, new Object());
 	}
 	
-	@Test(timeout=500)
-	public void testPosition2() {
+	@Test
+	public void testNegativePosition() {
 		Cube<Object> testCube = new BoundedCube<>(5, 5, 5);
 		try {
 			testCube.add(-1, -1, -1, new Object());
@@ -42,19 +42,19 @@ public class MyBoundedCubeTest {
 		} catch (IndexOutOfBoundsException e) {}
 	}
 	
-	@Test(timeout=500, expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testArgumentException() {
 		Cube<Object> testCube = new BoundedCube<>(6000, 6000, 36);
 		testCube.add(1, 1, 1, new Object());
 	}
 	
-	@Test(timeout=500, expected = IllegalArgumentException.class)
-	public void testArgumentException2() {
+	@Test(expected = IllegalArgumentException.class)
+	public void testNegativeArgument() {
 		Cube<Object> testCube = new BoundedCube<>(-1, -1, -1);
 		testCube.add(1, 1, 1, new Object());
 	}
 
-	@Test(timeout=500)
+	@Test
 	public void testGetAll() {
 		Cube<Object> testCube = new BoundedCube<>(5321, 3428, 35);
 		Object element = new Object(); 
@@ -67,7 +67,7 @@ public class MyBoundedCubeTest {
 		assertEquals(null, testCube.get(1, 1, 1));
 	}
 	
-	@Test(timeout=500)
+	@Test
 	public void testIsMultipleElementAt() {
 		Cube<Object> testCube = new BoundedCube<>(5321, 3428, 35);
 		Object element = new Object(); 
@@ -80,7 +80,7 @@ public class MyBoundedCubeTest {
 		assertEquals(true, testCube.isMultipleElementsAt(1, 1, 1));
 	}
 	
-	@Test(timeout=500)
+	@Test
 	public void testRemoveElementAt() {
 		Cube<Object> testCube = new BoundedCube<>(5321, 3428, 35);
 		Object element = new Object();
@@ -95,7 +95,7 @@ public class MyBoundedCubeTest {
 		assertFalse(testCube.remove(1, 1, 1, element));
 	}
 	
-	@Test(timeout=500)
+	@Test
 	public void testRemoveAndAdd() {
 		Cube<Object> testCube = new BoundedCube<>(5321, 3428, 35);
 		Object element = new Object();
@@ -107,36 +107,37 @@ public class MyBoundedCubeTest {
 		assertFalse(testCube.remove(1, 1, 1, element));
 	}
 	
-	@Test(timeout=500)
+	@Test
 	public void testAddNodeInTheMiddle() {
 		Cube<Object> testCube = new BoundedCube<>(5321, 3428, 35);
 		testCube.add(1, 1, 1, new Object());
-		testCube.add(3, 3, 3, new Object());
-		testCube.add(2, 2, 2, new Object());
+		testCube.add(3, 3, 1, new Object());
+		testCube.add(2, 2, 1, new Object());
 	}
 	
 	
-	@Test(timeout=500)
+	@Test
 	public void testPerformanceOneCell() {
 		Cube<Object> testCube = new BoundedCube<>(5321, 3428, 35);
 		for (int i = 0; i < 20000; i++) {
 			testCube.add(1, 1, 1, new Object());
 		}
+		assertEquals(20000, testCube.getAll(1, 1, 1).size());
 		testCube.removeAll(1, 1, 1);
 		assertEquals(null, testCube.get(1, 1, 1));
 	}
 	
-	@Test(timeout=1000)
+	@Test
 	public void testPerformanceMultiCell() {
 		Cube<Object> testCube = new BoundedCube<>(5321, 3428, 35);
-		for (int i = 0; i <= 5; i++) {
+		for (int i = 0; i <= 35; i++) {
 			for (int j = 0; j <= 3428; j++) {
 				testCube.add(j, j, i, new Object());
 			}
 		}
 	}
 	
-	@Test(timeout=500)
+	@Test
 	public void testClear() {
 		Cube<Object> testCube = new BoundedCube<>(5321, 3428, 35);
 		for (int i = 0; i <= 35; i++) {
