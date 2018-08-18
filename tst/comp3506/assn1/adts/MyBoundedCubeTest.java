@@ -168,7 +168,7 @@ public class MyBoundedCubeTest {
 	@Test
 	public void testPerformanceMultiCell() {
 		Cube<Object> testCube = new BoundedCube<>(5321, 3428, 35);
-		for (int i = 0; i <= 5; i++) {
+		for (int i = 0; i <= 35; i++) {
 			for (int j = 0; j <= 3428; j++) {
 				testCube.add(j, j, i, new Object());
 			}

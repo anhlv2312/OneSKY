@@ -271,16 +271,6 @@ public class BoundedCube<T> implements Cube<T> {
 			return this.x - position.x;
 		}
 		
-//		public String toString() {
-//			return "(" + x + "," + y + ")";
-//		}
-		
-		public static Position calculateMiddle(Position startPosition, Position endPosition) {
-			int x = (endPosition.x - startPosition.x)/2;
-			int y = (endPosition.y - startPosition.y)/2;
-			return new Position(x, y);
-		}
-		
 	}
 	
 	/**
@@ -330,20 +320,6 @@ public class BoundedCube<T> implements Cube<T> {
 			return position;
 		}
 		
-//		public String toString() {
-//			String pre, cur, nex;
-//			if (previousNode == null) {
-//				pre = "(null)";
-//			} else { 
-//				pre = previousNode.getPosition().toString();
-//			}
-//			if (nextNode == null) {
-//				nex = "(null)";
-//			} else { 
-//				nex = nextNode.getPosition().toString();
-//			}
-//			return pre + this.getPosition().toString() + nex;
-//		}
 	}
 	
 	/**
@@ -357,6 +333,7 @@ public class BoundedCube<T> implements Cube<T> {
 	
 		private Node<E> header;
 		private Node<E> trailer;
+		private Node<E> cursor;
 		
 		public OrderedLinkedList(int x, int y) {
 			/* [1 pp. 277] */
@@ -365,21 +342,9 @@ public class BoundedCube<T> implements Cube<T> {
 			header.setNext(trailer);
 			trailer.setPrevious(header);
 		}
-		
-		private Node<E> findNode(Position position) {
-			// Calculate the middle 
-			Position middle = Position.calculateMiddle(header.getPosition(), trailer.getPosition());
-			if (position.compareTo(middle) <= 0) {
-				// If the position is close to the head, search from the beginning
-				return findNodeFromHead(position);
-			} else {
-				// If the position is close to the tail, search from the end
-				return findNodeFromTail(position);
-			}			
-		}
-		
+
 		// Find a Node by iterating from the beginning
-		private Node<E> findNodeFromHead(Position position) {
+		private Node<E> findNode(Position position) {
 			Node<E> currentNode = header;
 			while (currentNode.getNext() != null) {
 				// keep looking for the node while there is still a next node
@@ -388,20 +353,7 @@ public class BoundedCube<T> implements Cube<T> {
 				}
 				currentNode = currentNode.getNext();
 			} 
-			return null;	
-		}
-		
-		// Find a Node by iterating from the end
-		private Node<E> findNodeFromTail(Position position) {
-			Node<E> currentNode = trailer;
-			while (currentNode.getPrevious() != null) {
-				// keep looking for the node while there is still a previous node
-				if (position.compareTo(currentNode.getPosition()) == 0) {
-					return currentNode;
-				}
-				currentNode = currentNode.getPrevious();
-			} 
-			return null;	
+			return null;		
 		}
 		
 		// Find the nearest node that is close to the left of the position
@@ -414,7 +366,6 @@ public class BoundedCube<T> implements Cube<T> {
 				if (position.compareTo(currentNode.getPosition()) > 0) {
 					break;
 				}
-
 			} 
 			return previousNode;		
 		}
@@ -476,19 +427,14 @@ public class BoundedCube<T> implements Cube<T> {
  * therefore, we need a data structure that can only hold the information of the cells 
  * that contains at least one aircraft, instead of predefined the array for the whole air space.
  * 
- * The approach that I used is to implement a Ordered Doubly Linked List [1] and use 
- * two ways linear search to find the item, I first calculate the middle point, 
- * and check if the position is closer the head or tail then use the appropriate method
- * to find the element. This approach will give the run-time efficiency of O(n) and 
- * memory space efficiency of O(n)
+ * The approach that I used is to implement a Ordered Doubly Linked List [1] and linear search to
+ * find the item, I first calculate the middle point, This approach will give the run-time 
+ * efficiency of O(n) and memory space efficiency of O(n)
  * 
  * I also noticed that the air space is only 35km height, then I decided to use an Array of the list
- * to represent the layers of the air space to reduce the maximum length of the List
- * 
- * I've conducted some tests to evaluate the performance of the "Array of Layers" method, and 
- * the result shows that, it is 4 times more efficient than the Non-Layer method. (The test is to
- * add 20.000 objects to arbitrary positions) this method does not require much more memory, because
- * it's only store the maximum of 36 references of every layer.
+ * to represent the layers of the air space to reduce the maximum length of the List. This method 
+ * does not require much more memory, because it's only store the maximum of 36 references 
+ * of every layer.
  * 
  * One other approach is use a 3D array to store all the cells of the air space, however, it is 
  * very memory consuming as we have to pre-allocate memory for every single cell, it also takes time
