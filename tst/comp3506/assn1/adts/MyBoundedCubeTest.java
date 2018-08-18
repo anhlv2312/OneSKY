@@ -13,12 +13,38 @@ public class MyBoundedCubeTest {
 		Object element = new Object();
 		testCube.add(1, 1, 1, element);
 		assertThat("Only element at a position was not returned.", testCube.get(1, 1, 1), is(equalTo(element)));
-		testCube.add(4, 4, 1, element);
-		assertThat("Only element at a position was not returned.", testCube.get(4, 4, 1), is(equalTo(element)));
+	}
+	
+	@Test
+	public void testGetWithMultipleElement() {
+		Cube<Object> testCube = new BoundedCube<>(10, 10, 1);
+		Object element1 = new Object();
+		Object element2 = new Object();
+		Object element3 = new Object();
+		Object element4 = new Object();
+		
+		testCube.add(1, 1, 1, element1);
+		assertThat("Only element at a position was not returned.", testCube.get(1, 1, 1), is(equalTo(element1)));
+		testCube.add(1, 9, 1, element1);
+		testCube.add(2, 9, 1, element2);
+		testCube.add(1, 8, 1, element3);
+		testCube.add(8, 9, 1, element4);
+		assertThat("Only element at a position was not returned.", testCube.get(1, 9, 1), is(equalTo(element1)));
+		assertThat("Only element at a position was not returned.", testCube.get(8, 9, 1), is(equalTo(element4)));
+	}
+	
+	@Test
+	public void testSkipSearchingElement() {
+		Cube<Object> testCube = new BoundedCube<>(10, 10, 1);
+		testCube.add(1, 9, 1, new Object());
+		testCube.add(2, 9, 1, new Object());
+		testCube.add(1, 8, 1, new Object());
+		testCube.add(8, 9, 1, new Object());
+		assertThat("Only element at a position was not returned.", testCube.get(3, 9, 1), is(equalTo(null)));
 	}
 	
 	@Test(expected = IndexOutOfBoundsException.class)
-	public void testPosition() {
+	public void testOutOfBoundPosition() {
 		Cube<Object> testCube = new BoundedCube<>(5, 5, 5);
 		testCube.add(5, 6, 5, new Object());
 	}
@@ -57,7 +83,7 @@ public class MyBoundedCubeTest {
 	}
 
 	@Test
-	public void testGetAll() {
+	public void testGetRemoveAll() {
 		Cube<Object> testCube = new BoundedCube<>(5321, 3428, 35);
 		Object element = new Object(); 
 		testCube.add(1, 1, 1, element);
@@ -103,10 +129,22 @@ public class MyBoundedCubeTest {
 		Object element = new Object();
 		assertFalse(testCube.remove(1, 1, 1, element));
 		testCube.add(1, 1, 1, element);
+		assertEquals(1, testCube.getAll(1, 1, 1).size());
 		assertTrue(testCube.remove(1, 1, 1, element));
 		testCube.add(1, 1, 1, element);
 		assertTrue(testCube.remove(1, 1, 1, element));
 		assertFalse(testCube.remove(1, 1, 1, element));
+	}
+	
+	@Test
+	public void testEmptyNodeAndQueue() {
+		Cube<Object> testCube = new BoundedCube<>(5321, 3428, 35);
+		Object element = new Object();
+		assertFalse(testCube.remove(1, 1, 1, element));
+		testCube.add(1, 1, 1, element);
+		assertTrue(testCube.remove(1, 1, 1, element));
+		assertNull(testCube.get(1, 1, 1));
+		assertNull(testCube.getAll(1, 1, 1));
 	}
 	
 	@Test
@@ -132,7 +170,7 @@ public class MyBoundedCubeTest {
 	@Test
 	public void testPerformanceMultiCell() {
 		Cube<Object> testCube = new BoundedCube<>(5321, 3428, 35);
-		for (int i = 0; i <= 35; i++) {
+		for (int i = 0; i <= 5; i++) {
 			for (int j = 0; j <= 3428; j++) {
 				testCube.add(j, j, i, new Object());
 			}
@@ -140,16 +178,16 @@ public class MyBoundedCubeTest {
 	}
 	
 	@Test
-	public void testClear() {
+	public void testClearAllLayers() {
 		Cube<Object> testCube = new BoundedCube<>(5321, 3428, 35);
 		for (int i = 0; i <= 35; i++) {
-			for (int j = 0; j <= 100; j++) {
+			for (int j = 0; j <= 3428; j++) {
 				testCube.add(j, j, i, new Object());
 			}
 		}
 		testCube.clear();
 		for (int i = 0; i <= 35; i++) {
-			for (int j = 0; j <= 100; j++) {
+			for (int j = 0; j <= 3428; j++) {
 				assertEquals(null, testCube.get(j, j, i));
 			}
 		}

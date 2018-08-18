@@ -147,12 +147,13 @@ public class TraversableQueue<T> implements IterableQueue<T> {
 /**
  * Design choices justification:
  *  
- * Since it may have only a few aircraft in one cell, however, the maximum number could be 20.000, 
- * So it would be memory consuming if we predefinde a huge array to store information. Instead,
- * I choose to implement a queue use a Singly Linked List [1] as the data structure.
- * 
+ * Since it may have only a few aircraft in one cell, and we need to iterate over the queue
+ * then I choose to implement a queue use a Singly Linked List [1] as the data structure.
+ * They Queue only need to be singly because we only have to iterate one way, from first to last.
  * With this design choice, we can access enqueue and dequeue with the time complexity of O(1)
  * 
+ * There is another approach it that using an array to store information. However it would be more
+ * memory consuming and more complicated to implement Iterator.
  * 
  * REFERENCE 
  * [1]	M. T. Goodrich, R. Tamassia, and M. H. Goldwasser, 

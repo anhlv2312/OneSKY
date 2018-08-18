@@ -99,12 +99,17 @@ public class BoundedCube<T> implements Cube<T> {
 	@Override
 	public T get(int x, int y, int z) throws IndexOutOfBoundsException {
 		Position position = convertPosition(x, y, z);
+		
 		TraversableQueue<T> queue = getLayer(z).getElement(position);
+		// If there is no queue there, return null
 		if (queue == null) {
 			return null;
 		}
-		
+		// Initialize Iterator 
+		// (It's quite over-complicated but, we don't have to create additional methods) 
 		Iterator iterator = queue.iterator();
+		
+		// Return the first item.
 		return (T)iterator.next();
 		
 	}
@@ -125,6 +130,7 @@ public class BoundedCube<T> implements Cube<T> {
 	@Override
 	public IterableQueue<T> getAll(int x, int y, int z) throws IndexOutOfBoundsException {
 		Position position = convertPosition(x, y, z);
+		// Return the whole queue in that position
 		return getLayer(z).getElement(position);
 	}
 
@@ -145,6 +151,7 @@ public class BoundedCube<T> implements Cube<T> {
 	public boolean isMultipleElementsAt(int x, int y, int z) throws IndexOutOfBoundsException {
 		Position position = convertPosition(x, y, z);
 		TraversableQueue<T> cell = getLayer(z).getElement(position);
+		// Return false if null or queue size <= 1, otherwise return true
 		if (cell == null) {
 			return false;
 		} else { 
@@ -184,12 +191,12 @@ public class BoundedCube<T> implements Cube<T> {
 				newQueue.enqueue(e);
 			}
 		}
+		
+		// Replace newQueue to that position
+		getLayer(z).setElement(position, newQueue);
+		
 		if (newQueue.size() == 0) {
-			// If there is no element left, then remove the Node
 			getLayer(z).removeNode(position);
-		} else {
-			// Else add the new queue to that position
-			getLayer(z).setElement(position, newQueue);
 		}
 		
 		// Return true if the size is reduced
@@ -228,8 +235,9 @@ public class BoundedCube<T> implements Cube<T> {
 		}
 	}
 	
-	// Validate the x,y,z input and return the position object
+	
 	private Position convertPosition(int x, int y, int z) throws IndexOutOfBoundsException {
+		// Validate the x,y,z input and return the position object
 		if ((x < 0 || y < 0 || z < 0) || (x > this.lenght || y > this.breadth || z > this.height)) {
 			throw new IndexOutOfBoundsException();
 		}
@@ -261,6 +269,10 @@ public class BoundedCube<T> implements Cube<T> {
 			} 
 			return this.x - position.x;
 		}
+		
+//		public String toString() {
+//			return "(" + x + "," + y + ")";
+//		}
 		
 		public static Position calculateMiddle(Position startPosition, Position endPosition) {
 			int x = (endPosition.x - startPosition.x)/2;
@@ -316,6 +328,21 @@ public class BoundedCube<T> implements Cube<T> {
 		public Position getPosition() {
 			return position;
 		}
+		
+//		public String toString() {
+//			String pre, cur, nex;
+//			if (previousNode == null) {
+//				pre = "(null)";
+//			} else { 
+//				pre = previousNode.getPosition().toString();
+//			}
+//			if (nextNode == null) {
+//				nex = "(null)";
+//			} else { 
+//				nex = nextNode.getPosition().toString();
+//			}
+//			return pre + this.getPosition().toString() + nex;
+//		}
 	}
 	
 	/**
@@ -339,17 +366,22 @@ public class BoundedCube<T> implements Cube<T> {
 		}
 		
 		private Node<E> findNode(Position position) {
+			// Calculate the middle 
 			Position middle = Position.calculateMiddle(header.getPosition(), trailer.getPosition());
 			if (position.compareTo(middle) <= 0) {
+				// If the position is close to the head, search from the beginning
 				return findNodeFromHead(position);
 			} else {
+				// If the position is close to the tail, search from the end
 				return findNodeFromTail(position);
 			}			
 		}
 		
+		// Find a Node by iterating from the beginning
 		private Node<E> findNodeFromHead(Position position) {
 			Node<E> currentNode = header;
 			while (currentNode.getNext() != null) {
+				// keep looking for the node while there is still a next node
 				if (position.compareTo(currentNode.getPosition()) == 0) {
 					return currentNode;
 				}
@@ -358,9 +390,11 @@ public class BoundedCube<T> implements Cube<T> {
 			return null;	
 		}
 		
+		// Find a Node by iterating from the end
 		private Node<E> findNodeFromTail(Position position) {
 			Node<E> currentNode = trailer;
 			while (currentNode.getPrevious() != null) {
+				// keep looking for the node while there is still a previous node
 				if (position.compareTo(currentNode.getPosition()) == 0) {
 					return currentNode;
 				}
@@ -369,21 +403,26 @@ public class BoundedCube<T> implements Cube<T> {
 			return null;	
 		}
 		
+		// Find the nearest node that is close to the left of the position
 		private Node<E> findPreviousNode(Position position) {
 			Node<E> currentNode = header;
 			Node<E> previousNode = header;
-			while ((currentNode.getNext() != null) && (position.compareTo(currentNode.getPosition()) <= 0)) {
-				if (position.compareTo(currentNode.getPosition()) < 0) {
-					previousNode = currentNode;
-				}
+			while (currentNode.getNext() != null) {
 				currentNode = currentNode.getNext();
+				previousNode = currentNode.getPrevious();
+				if (position.compareTo(currentNode.getPosition()) > 0) {
+					break;
+				}
+
 			} 
 			return previousNode;		
 		}
 		
+		// Remove the Node from linked list
 		public void removeNode(Position position) {
 			Node<E> currentNode = this.findNode(position);
 			currentNode.getPrevious().setNext(currentNode.getNext());
+			currentNode.getNext().setPrevious(currentNode.getPrevious());
 		}
 		
 		public E getElement(Position position) {
@@ -399,14 +438,15 @@ public class BoundedCube<T> implements Cube<T> {
 			if (currentNode == null) {
 				Node<E> previousNode = this.findPreviousNode(position);
 				currentNode = this.addNodeAfter(position, previousNode, element);
-				previousNode.setNext(currentNode);
 			} else {
 				currentNode.setElement(element);
 			}
 		}
 		
+		// Add a new node after a particular node
 		public Node<E> addNodeAfter(Position position, Node<E> previousNode, E element) {
 			Node<E> newNode = new Node<E>(position, element, null, null);
+			previousNode.getNext().setPrevious(newNode);
 			newNode.setPrevious(previousNode);
 			newNode.setNext(previousNode.getNext());
 			previousNode.setNext(newNode);
@@ -414,10 +454,14 @@ public class BoundedCube<T> implements Cube<T> {
 			
 		}
 		
+		// Clear all the List 
 		public void clear() {
+			// link head and tail directly to each other,
+			header.setNext(trailer);
+			trailer.setPrevious(header);
+			// remove the queue of head and tail
 			header.setElement(null);
 			trailer.setElement(null);
-			header.setNext(trailer);
 		}
 		
 	}
