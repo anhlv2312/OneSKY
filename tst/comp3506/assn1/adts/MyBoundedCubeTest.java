@@ -1,7 +1,5 @@
 package comp3506.assn1.adts;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
@@ -12,7 +10,7 @@ public class MyBoundedCubeTest {
 		Cube<Object> testCube = new BoundedCube<>(5, 5, 5);
 		Object element = new Object();
 		testCube.add(1, 1, 1, element);
-		assertThat("Only element at a position was not returned.", testCube.get(1, 1, 1), is(equalTo(element)));
+		assertEquals(testCube.get(1, 1, 1), element);
 	}
 	
 	@Test
@@ -24,13 +22,13 @@ public class MyBoundedCubeTest {
 		Object element4 = new Object();
 		
 		testCube.add(1, 1, 1, element1);
-		assertThat("Only element at a position was not returned.", testCube.get(1, 1, 1), is(equalTo(element1)));
+		assertEquals(testCube.get(1, 1, 1), element1);
 		testCube.add(1, 9, 1, element1);
 		testCube.add(2, 9, 1, element2);
 		testCube.add(1, 8, 1, element3);
 		testCube.add(8, 9, 1, element4);
-		assertThat("Only element at a position was not returned.", testCube.get(1, 9, 1), is(equalTo(element1)));
-		assertThat("Only element at a position was not returned.", testCube.get(8, 9, 1), is(equalTo(element4)));
+		assertEquals(testCube.get(1, 9, 1), element1);
+		assertEquals(testCube.get(8, 9, 1), element4);
 	}
 	
 	@Test
@@ -40,7 +38,7 @@ public class MyBoundedCubeTest {
 		testCube.add(2, 9, 1, new Object());
 		testCube.add(1, 8, 1, new Object());
 		testCube.add(8, 9, 1, new Object());
-		assertThat("Only element at a position was not returned.", testCube.get(3, 9, 1), is(equalTo(null)));
+		assertEquals(testCube.get(3, 9, 1), null);
 	}
 	
 	@Test(expected = IndexOutOfBoundsException.class)

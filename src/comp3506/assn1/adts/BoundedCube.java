@@ -107,8 +107,7 @@ public class BoundedCube<T> implements Cube<T> {
 		}
 		// Initialize Iterator 
 		// (It's quite over-complicated but, we don't have to create additional methods) 
-		Iterator iterator = queue.iterator();
-		
+		Iterator<T> iterator = queue.iterator();
 		// Return the first item.
 		return (T)iterator.next();
 		
@@ -244,8 +243,10 @@ public class BoundedCube<T> implements Cube<T> {
 		return new Position(x, y);
 	}
 	
+	@SuppressWarnings("unchecked")
 	private OrderedLinkedList<TraversableQueue<T>> getLayer(int layerIndex) {
 		return (OrderedLinkedList<TraversableQueue<T>>)layers[layerIndex];
+
 	}
 	
 	/**
@@ -486,8 +487,8 @@ public class BoundedCube<T> implements Cube<T> {
  * 
  * I've conducted some tests to evaluate the performance of the "Array of Layers" method, and 
  * the result shows that, it is 4 times more efficient than the Non-Layer method. (The test is to
- * add 15.000 objects to arbitrary positions) this method does not require much more memory, because
- * it's only store the maximum of 35 references of every layer.
+ * add 20.000 objects to arbitrary positions) this method does not require much more memory, because
+ * it's only store the maximum of 36 references of every layer.
  * 
  * One other approach is use a 3D array to store all the cells of the air space, however, it is 
  * very memory consuming as we have to pre-allocate memory for every single cell, it also takes time
