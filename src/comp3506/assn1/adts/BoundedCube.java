@@ -221,19 +221,13 @@ public class BoundedCube<T> implements Cube<T> {
 				return this.z - position.z;
 			}
 			
-			if (this.y != position.z) {
+			if (this.y != position.y) {
 				return this.y - position.y;
 			} 
 			
 			return this.x - position.x;
 		}
-		
-		public static Position calculateMiddle(Position startPosition, Position endPosition) {
-			int x = (startPosition.x + endPosition.x)/2;
-			int y = (startPosition.y + endPosition.y)/2;
-			int z = (startPosition.z + endPosition.z)/2;
-			return new Position(x, y, z);
-		}
+	
 	}
 	
 	/**
