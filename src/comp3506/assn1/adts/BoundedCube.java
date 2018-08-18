@@ -57,11 +57,11 @@ public class BoundedCube<T> implements Cube<T> {
 	@Override
 	public void add(int x, int y, int z, T element) throws IndexOutOfBoundsException {
 		Position position = convertPosition(x, y, z);
-		TraversableQueue<T> queue = cells.get(position);		
+		TraversableQueue<T> queue = cells.getElement(position);		
 		if (queue == null) {
 			TraversableQueue<T> newQueue = new TraversableQueue<T>();
 			newQueue.enqueue(element);
-			cells.set(position, newQueue);
+			cells.setElement(position, newQueue);
 		} else {
 			queue.enqueue(element);
 		}
@@ -82,7 +82,7 @@ public class BoundedCube<T> implements Cube<T> {
 	@Override
 	public T get(int x, int y, int z) throws IndexOutOfBoundsException {
 		Position position = convertPosition(x, y, z);
-		TraversableQueue<T> queue = cells.get(position);
+		TraversableQueue<T> queue = cells.getElement(position);
 		if (queue == null) {
 			return null;
 		}
@@ -104,7 +104,7 @@ public class BoundedCube<T> implements Cube<T> {
 	@Override
 	public IterableQueue<T> getAll(int x, int y, int z) throws IndexOutOfBoundsException {
 		Position position = convertPosition(x, y, z);
-		return cells.get(position);
+		return cells.getElement(position);
 	}
 
 	/**
@@ -122,7 +122,7 @@ public class BoundedCube<T> implements Cube<T> {
 	@Override
 	public boolean isMultipleElementsAt(int x, int y, int z) throws IndexOutOfBoundsException {
 		Position position = convertPosition(x, y, z);
-		TraversableQueue<T> cell = cells.get(position);
+		TraversableQueue<T> cell = cells.getElement(position);
 		if (cell == null) {
 			return false;
 		} else { 
@@ -146,7 +146,7 @@ public class BoundedCube<T> implements Cube<T> {
 	@Override
 	public boolean remove(int x, int y, int z, T element) throws IndexOutOfBoundsException {
 		Position position = convertPosition(x, y, z);
-		TraversableQueue<T> queue = cells.get(position);
+		TraversableQueue<T> queue = cells.getElement(position);
 		if (queue == null) {
 			return false;
 		}
@@ -156,7 +156,11 @@ public class BoundedCube<T> implements Cube<T> {
 				newQueue.enqueue(e);
 			}
 		}
-		cells.set(position, newQueue);
+		if (newQueue.size() == 0) {
+			cells.removeNode(position);
+		} else {
+			cells.setElement(position, newQueue);
+		}
 		return (newQueue.size() < queue.size());
 	}
 
@@ -174,13 +178,13 @@ public class BoundedCube<T> implements Cube<T> {
 	@Override
 	public void removeAll(int x, int y, int z) throws IndexOutOfBoundsException {
 		Position position = convertPosition(x, y, z);
-		cells.set(position, null);
+		cells.setElement(position, null);
 	}
 
 	/**
 	 * Removes all elements stored in the cube.
 	 * 
-	 * Time-complexity O(n)
+	 * Time-complexity O(1)
 	 * 
 	 */
 	@Override
@@ -201,7 +205,7 @@ public class BoundedCube<T> implements Cube<T> {
 	 */
 	private static class Position implements Comparable<Position> {
 		/* [1 pp. 227] */
-		int x, y, z;
+		private int x, y, z;
 		
 		public Position(int x, int y, int z) {
 			this.x = x;
@@ -223,6 +227,14 @@ public class BoundedCube<T> implements Cube<T> {
 			
 			return this.x - position.x;
 		}
+		
+		public static Position calculateMiddlePoint(Position start, Position end) {
+			int xx = (start.x + end.x)/2;
+			int yy = (start.y + end.y)/2;
+			int zz = (start.z + end.z)/2;
+			return new Position(xx , yy, zz);
+			
+		}
 	}
 	
 	/**
@@ -235,9 +247,10 @@ public class BoundedCube<T> implements Cube<T> {
 
 		private E element;
 		private Node<E> nextNode;
+		private Node<E> previousNode;
 		private Position position;
 		
-		public Node(Position position, E element, Node<E> nextNode) {
+		public Node(Position position, E element, Node<E> previousNode, Node<E> nextNode) {
 			this.element = element; 
 			this.nextNode = nextNode;
 			this.position = position;
@@ -250,6 +263,10 @@ public class BoundedCube<T> implements Cube<T> {
 		public Node<E> getNext() {
 			return nextNode;
 		}
+		
+		public Node<E> getPrev() {
+			return previousNode;
+		}
 
 		public void setElement(E element) {
 			this.element = element;
@@ -257,6 +274,10 @@ public class BoundedCube<T> implements Cube<T> {
 		
 		public void setNext(Node<E> nextNode) {
 			this.nextNode = nextNode;
+		}
+
+		public void setPrevious(Node<E> previousNode) {
+			this.previousNode = previousNode;
 		}
 		
 		public Position getPosition() {
@@ -277,12 +298,13 @@ public class BoundedCube<T> implements Cube<T> {
 		
 		public LinkedPositionalList(int x, int y, int z) {
 			/* [1 pp. 277] */
-			header = new Node<> (new Position(0,0,0), null, null);
-			trailer = new Node<> (new Position(x,y,z), null, null);
+			header = new Node<> (new Position(0,0,0), null, null, null);
+			trailer = new Node<> (new Position(x,y,z), null, null, null);
 			header.setNext(trailer);
+			trailer.setPrevious(header);
 		}
 		
-		public Node<E> find(Position position) {
+		private Node<E> binarySearch(Position position, Node<E> startNode, Node<E> endNode) {
 			Node<E> currentNode = header;
 			while (currentNode.getNext() != null) {
 				if (position.compareTo(currentNode.getPosition()) == 0) {
@@ -293,7 +315,18 @@ public class BoundedCube<T> implements Cube<T> {
 			return null;			
 		}
 		
-		public Node<E> findPrevious(Position position) {
+		private Node<E> findNode(Position position) {
+			Node<E> currentNode = header;
+			while (currentNode.getNext() != null) {
+				if (position.compareTo(currentNode.getPosition()) == 0) {
+					return currentNode;
+				}
+				currentNode = currentNode.getNext();
+			} 
+			return null;			
+		}
+		
+		public Node<E> findPreviousNode(Position position) {
 			Node<E> currentNode = header;
 			Node<E> previousNode = header;
 			while (currentNode.getNext() != null) {
@@ -305,31 +338,52 @@ public class BoundedCube<T> implements Cube<T> {
 			return previousNode;			
 		}
 		
-		public E get(Position position) {
-			Node<E> node = this.find(position);
+		public E getElement(Position position) {
+			Node<E> node = this.findNode(position);
 			if (node != null) {
 				return node.getElement();
 			}
 			return null;
 		}
 		
-		public void set(Position position, E element) {
-			Node<E> currentNode = this.find(position);
+		public void setElement(Position position, E element) {
+			Node<E> currentNode = this.findNode(position);
 			if (currentNode == null) {
-				Node<E> previousNode = this.findPrevious(position);
-				currentNode = new Node<E>(position, null, null);
-				currentNode.setNext(previousNode.getNext());
+				Node<E> previousNode = this.findPreviousNode(position);
+				currentNode = this.addNodeAfter(position, previousNode, element);
 				previousNode.setNext(currentNode);
+			} else {
+				currentNode.setElement(element);
 			}
-			currentNode.setElement(element);
+		}
+		
+		public void removeNode(Position position) {
+			Node<E> currentNode = this.findNode(position);
+			currentNode.getPrev().setNext(currentNode.getNext());
+		}
+		
+		public Node<E> addNode(Position position, Node<E> previousNode, E element) {
+			Node<E> newNode = new Node<E>(position, element, null, null);
+			newNode.setPrevious(previousNode);
+			newNode.setNext(previousNode.getNext());
+			previousNode.setNext(newNode);
+			return newNode;
+			
+		}
+		
+		public Node<E> addNodeAfter(Position position, Node<E> previousNode, E element) {
+			Node<E> newNode = new Node<E>(position, element, null, null);
+			newNode.setPrevious(previousNode);
+			newNode.setNext(previousNode.getNext());
+			previousNode.setNext(newNode);
+			return newNode;
+			
 		}
 		
 		public void clear() {
-			Node<E> currentNode = header;
-			while (currentNode.getNext() != null) {
-				currentNode.setElement(null);
-				currentNode = currentNode.getNext();
-			} 
+			header.setElement(null);
+			trailer.setElement(null);
+			header.setNext(trailer);
 		}
 		
 	}
@@ -338,6 +392,12 @@ public class BoundedCube<T> implements Cube<T> {
 
 /**
  * Design choices justification
+ * 
+ * Because the air space is very big, and the number of the aircraft is limited by 20000, 
+ * therefore, we need a data structure that can only hold the information of the cells 
+ * that contains at least one aircraft, instead of predefined the array for the whole air space.
+ *
+ * The approach that I used is to implement a Ordered Linked List and use binary search for find an item
  * 
  * REFERENCE 
  * [1]	M. T. Goodrich, R. Tamassia, and M. H. Goldwasser, 

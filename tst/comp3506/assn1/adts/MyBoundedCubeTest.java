@@ -93,7 +93,18 @@ public class MyBoundedCubeTest {
 		assertFalse(testCube.remove(1, 1, 1, new Object()));
 		assertTrue(testCube.remove(1, 1, 1, element));
 		assertFalse(testCube.remove(1, 1, 1, element));
-		
+	}
+	
+	@Test(timeout=500)
+	public void testRemoveAndAdd() {
+		Cube<Object> testCube = new BoundedCube<>(5321, 3428, 35);
+		Object element = new Object();
+		assertFalse(testCube.remove(1, 1, 1, element));
+		testCube.add(1, 1, 1, element);
+		assertTrue(testCube.remove(1, 1, 1, element));
+		testCube.add(1, 1, 1, element);
+		assertTrue(testCube.remove(1, 1, 1, element));
+		assertFalse(testCube.remove(1, 1, 1, element));
 	}
 	
 	@Test(timeout=500)
