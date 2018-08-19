@@ -270,9 +270,9 @@ public class BoundedCube<T> implements Cube<T> {
 			return this.x - position.x;
 		}
 		
-		public String toString() {
-			return "(" + x + "," + y + ")";
-		}
+//		public String toString() {
+//			return "(" + x + "," + y + ")";
+//		}
 	
 		
 	}
@@ -324,20 +324,20 @@ public class BoundedCube<T> implements Cube<T> {
 			return position;
 		}
 
-		public String toString() {
-			String pre, nex;
-			if (previousNode == null) {
-				pre = "(null)";
-			} else { 
-				pre = previousNode.getPosition().toString();
-			}
-			if (nextNode == null) {
-				nex = "(null)";
-			} else { 
-				nex = nextNode.getPosition().toString();
-			}
-			return "[" + pre + this.getPosition().toString() + nex +"]";
-		}
+//		public String toString() {
+//			String pre, nex;
+//			if (previousNode == null) {
+//				pre = "(null)";
+//			} else { 
+//				pre = previousNode.getPosition().toString();
+//			}
+//			if (nextNode == null) {
+//				nex = "(null)";
+//			} else { 
+//				nex = nextNode.getPosition().toString();
+//			}
+//			return "[" + pre + this.getPosition().toString() + nex +"]";
+//		}
 		
 	}
 	
@@ -363,14 +363,14 @@ public class BoundedCube<T> implements Cube<T> {
 			cursor = header;
 		}
 		
-		public void show() {
-			Node<E> currentNode = header;
-			while (currentNode != null) {
-				System.out.print(currentNode.toString());
-				currentNode = currentNode.getNext();
-			}
-			System.out.println("");
-		}
+//		public void show() {
+//			Node<E> currentNode = header;
+//			while (currentNode != null) {
+//				System.out.print(currentNode.toString());
+//				currentNode = currentNode.getNext();
+//			}
+//			System.out.println("");
+//		}
 		
 		private Node<E> findNode(Position position) {
 			if (position.compareTo(cursor.getPosition()) == 0) {
@@ -389,6 +389,7 @@ public class BoundedCube<T> implements Cube<T> {
 				if (position.compareTo(currentNode.getPosition()) == 0) {
 					return currentNode;
 				}
+				cursor = currentNode;
 				currentNode = currentNode.getNext();
 			} 
 			return null;		
@@ -401,6 +402,7 @@ public class BoundedCube<T> implements Cube<T> {
 				if (position.compareTo(currentNode.getPosition()) == 0) {
 					return currentNode;
 				}
+				cursor = currentNode;
 				currentNode = currentNode.getPrevious();
 			} 
 			return null;		
@@ -473,9 +475,9 @@ public class BoundedCube<T> implements Cube<T> {
 		// Clear all the List 
 		public void clear() {
 			// link head and tail directly to each other,
+			cursor = header;
 			header.setNext(trailer);
 			trailer.setPrevious(header);
-			cursor = header;
 			header.setElement(null);
 			trailer.setElement(null);
 		}

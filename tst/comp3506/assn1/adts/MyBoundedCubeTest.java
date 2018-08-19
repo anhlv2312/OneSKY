@@ -36,6 +36,27 @@ public class MyBoundedCubeTest {
 	}
 	
 	@Test
+	public void testCursorPosition() {
+		Cube<Object> testCube = new BoundedCube<>(10, 10, 1);
+		Object element1 = new Object();
+		Object element2 = new Object();
+		Object element3 = new Object();
+		Object element4 = new Object();
+		
+		testCube.add(1, 1, 1, element1);
+		assertEquals(testCube.get(1, 1, 1), element1);
+		testCube.add(1, 9, 1, element1);
+		testCube.add(2, 9, 1, element2);
+		testCube.add(1, 8, 1, element3);
+		testCube.get(10, 10, 1);
+		testCube.add(8, 9, 1, element4);
+		assertEquals(testCube.get(1, 9, 1), element1);
+		assertEquals(testCube.get(8, 9, 1), element4);
+	}
+	
+	
+	
+	@Test
 	public void testSkipSearchingElement() {
 		Cube<Object> testCube = new BoundedCube<>(10, 10, 1);
 		testCube.add(1, 9, 1, new Object());
