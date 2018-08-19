@@ -35,7 +35,7 @@ public class BoundedCube<T> implements Cube<T> {
 	 *  	positive.
 	 */
 	public BoundedCube(int length, int breadth, int height) throws IllegalArgumentException {
-		// Validate the aguments
+		// Validate the arguments
 		if ((length <= 0 || breadth <= 0 || height <= 0) 
 				|| (length > MAX_X || breadth > MAX_Y || height > MAX_Z)) {
 			throw new IllegalArgumentException();
@@ -51,7 +51,12 @@ public class BoundedCube<T> implements Cube<T> {
 		}
 		
 	}
-
+	
+	// Cast the layer from Object to OrderedLinkedList
+	private OrderedLinkedList<TraversableQueue<T>> getLayer(int layerIndex) {
+		return (OrderedLinkedList<TraversableQueue<T>>)layers[layerIndex];
+	}
+	
 	/**
 	 * Add an element at a fixed position.
 	 * 
@@ -194,6 +199,7 @@ public class BoundedCube<T> implements Cube<T> {
 		// Replace newQueue to that position
 		getLayer(z).setElement(position, newQueue);
 		
+		// Remove empty node from the layer
 		if (newQueue.size() == 0) {
 			getLayer(z).removeNode(position);
 		}
@@ -233,19 +239,13 @@ public class BoundedCube<T> implements Cube<T> {
 			getLayer(z).clear();
 		}
 	}
-	
-	
+
 	private Position convertPosition(int x, int y, int z) throws IndexOutOfBoundsException {
 		// Validate the x,y,z input and return the position object
 		if ((x < 0 || y < 0 || z < 0) || (x > this.lenght || y > this.breadth || z > this.height)) {
 			throw new IndexOutOfBoundsException();
 		}
 		return new Position(x, y);
-	}
-	
-	private OrderedLinkedList<TraversableQueue<T>> getLayer(int layerIndex) {
-		return (OrderedLinkedList<TraversableQueue<T>>)layers[layerIndex];
-
 	}
 	
 	/**
@@ -520,16 +520,16 @@ public class BoundedCube<T> implements Cube<T> {
  * 
  * I also noticed that the air space is only 35km height, then I decided to use an Array of the list
  * to represent the layers of the air space to reduce the maximum length of the List. This method 
- * give a significant improvement in Random Access Test, (for reduce time for inserting 20.000 
+ * give a significant improvement in Random Access Test, (it reduce the time of inserting 20.000 
  * objects into arbitrary locations from 4000ms to ~300ms) This method does not require much more 
- * memory, because it's only store the maximum of 36 references of every layer. 
+ * memory, because it's only store the maximum of 36 references of 36 layers. 
  * 
  * One other approach is use a 3D array to store all the cells of the air space, however, it is 
  * very memory consuming as we have to pre-allocate memory for every single cell, it also takes time
  * to initialize the system, especially to test a very single case while performing the unit tests.
  * 
- * There may be a solution using tree data structure, however, it would take time to research 
- * and implement
+ * There may be a solution using tree data structure that is much more efficient, however, it would 
+ * take time to research and implement.
  * 
  * REFERENCE 
  * [1]	M. T. Goodrich, R. Tamassia, and M. H. Goldwasser, 
