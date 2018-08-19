@@ -29,15 +29,45 @@ public class MyBoundedCubeTest {
 		Object element4 = new Object();
 		
 		testCube.add(1, 1, 1, element1);
+		testCube.add(1, 1, 1, element2);
+		testCube.add(1, 1, 1, element3);
+		testCube.add(1, 1, 1, element4);
+
 		assertEquals(testCube.get(1, 1, 1), element1);
-		testCube.add(1, 9, 1, element1);
-		testCube.add(2, 9, 1, element2);
-		testCube.add(1, 8, 1, element3);
-		testCube.add(8, 9, 1, element4);
-		assertEquals(testCube.get(1, 9, 1), element1);
-		assertEquals(testCube.get(8, 9, 1), element4);
+		testCube.remove(1, 1, 1, element1);
+		testCube.remove(1, 1, 1, element3);
+		assertEquals(testCube.get(1, 1, 1), element2);
+		testCube.remove(1, 1, 1, element2);
+		assertEquals(testCube.get(1, 1, 1), element4);
+		testCube.remove(1, 1, 1, element4);
+		assertNull(testCube.get(1, 1, 1));
+		
 	}
 
+	@Test
+	public void testMultipleRandomPosition() {
+		Random r = new Random();
+		Object[] objects = new Object[100];
+		for (int i = 0; i <= 99; i++) {
+			objects[i] = new Object();
+		}
+		Cube<Object> testCube = new BoundedCube<>(100, 100, 35);
+		for (int i = 0; i <= 99; i++) {
+			int random = r.nextInt(99);
+			testCube.add(random, random, 1, objects[random]);
+		}
+		for (int i = 0; i <= 99; i++) {
+			int random = r.nextInt(99);
+			Object compare = testCube.get(random, random, 1);
+			if (compare != null) {
+				assertEquals(compare, objects[random]);
+			}
+		}
+	}
+
+		
+	
+	
 	@Test
 	public void testEmptyHeader() {
 		Cube<Object> testCube = new BoundedCube<>(5, 5, 5);
@@ -231,24 +261,20 @@ public class MyBoundedCubeTest {
 	
 	@Test
 	public void testClearAllLayers() {
-		Cube<Object> testCube = new BoundedCube<>(5321, 3428, 35);
-		for (int i = 0; i <= 35; i++) {
-			for (int j = 0; j <= 3428; j++) {
-				testCube.add(j, j, i, new Object());
-			}
+		Random r = new Random();
+		Cube<Object> testCube = new BoundedCube<>(100, 100, 35);
+		for (int i = 0; i <= 2000; i++) {
+			testCube.add(r.nextInt(100), r.nextInt(100), r.nextInt(35), new Object());
 		}
 		testCube.clear();
 		for (int i = 0; i <= 35; i++) {
-			for (int j = 0; j <= 3428; j++) {
+			for (int j = 0; j <= 100; j++) {
 				assertEquals(null, testCube.get(j, j, i));
 			}
 		}
 		
+
+		
 	}
-
-	
-
-
-
 
 }

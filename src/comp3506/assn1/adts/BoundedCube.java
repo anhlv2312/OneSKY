@@ -336,7 +336,7 @@ public class BoundedCube<T> implements Cube<T> {
 //			} else { 
 //				nex = nextNode.getPosition().toString();
 //			}
-//			return "[" + pre + this.getPosition().toString() + nex +"]";
+//			 return "[" + pre + this.getPosition().toString() + nex +"]";
 //		}
 		
 	}
@@ -363,17 +363,27 @@ public class BoundedCube<T> implements Cube<T> {
 			cursor = header;
 		}
 		
-		public void show() {
-			Node<E> currentNode = header;
-			while (currentNode != null) {
-				System.out.print(currentNode.toString());
-				currentNode = currentNode.getNext();
-			}
-			System.out.println("");
-		}
-		
-
-		
+//		public void show() {
+//			Node<E> currentNode = header;
+//			while (currentNode != null) {
+//				System.out.print(currentNode.toString());
+//				currentNode = currentNode.getNext();
+//			}
+//			System.out.println("");
+//		}
+//		
+//		
+//		public void checkOrder() {
+//			Node<E> currentNode = header;
+//			while (currentNode.getNext() != null) {
+//				Position next = currentNode.getNext().getPosition();
+//				if (currentNode.getPosition().compareTo(next) > 0) {
+//					throw new IndexOutOfBoundsException();
+//				}
+//				currentNode = currentNode.getNext();
+//				
+//			}
+//		}
 		
 		private Node<E> findNode(Position position) {
 			if (position.compareTo(cursor.getPosition()) == 0) {
@@ -388,11 +398,10 @@ public class BoundedCube<T> implements Cube<T> {
 		// Find a Node by iterating to the beginning
 		private Node<E> findNodeRight(Position position) {
 			Node<E> currentNode = cursor;
-			while (currentNode.getNext() != null) {
+			while (currentNode != null) {
 				if (position.compareTo(currentNode.getPosition()) == 0) {
 					return currentNode;
 				}
-				// cursor will move to the 
 				cursor = currentNode;
 				currentNode = currentNode.getNext();
 			} 
@@ -402,7 +411,7 @@ public class BoundedCube<T> implements Cube<T> {
 		// Find a Node by iterating to the end
 		private Node<E> findNodeLeft(Position position) {
 			Node<E> currentNode = cursor;
-			while (currentNode.getPrevious() != null) {
+			while (currentNode != null) {
 				if (position.compareTo(currentNode.getPosition()) == 0) {
 					return currentNode;
 				}
@@ -443,24 +452,46 @@ public class BoundedCube<T> implements Cube<T> {
 		
 		// Add a new node after a particular node
 		public Node<E> addNode(Position position, E element) {
-			Node<E> newNode = new Node<E>(position, element, null, null);
-			if (position.compareTo(cursor.getPosition()) < 0) {
-				cursor.getPrevious().setNext(newNode);
-				newNode.setNext(cursor);
-				newNode.setPrevious(cursor.getPrevious());
-				cursor.setPrevious(newNode);
+			if (position.compareTo(cursor.getPosition()) >= 0) {
+				return addNodeRight(position, element);
 			} else {
-				cursor.getNext().setPrevious(newNode);
-				newNode.setPrevious(cursor);
-				newNode.setNext(cursor.getNext());
-				cursor.setNext(newNode);
+				return addNodeLeft(position, element);
 			}
-			return newNode;
+		}
+		
+		// Add a new node after a particular node
+		public Node<E> addNodeRight(Position position, E element) {
+			while (cursor != null) {
+				if (cursor.getPosition().compareTo(position) > 0) {
+					Node<E> newNode = new Node<E>(position, element, null, null);
+					cursor.getPrevious().setNext(newNode);
+					newNode.setNext(cursor);
+					newNode.setPrevious(cursor.getPrevious());
+					cursor.setPrevious(newNode);
+					return newNode;
+				}
+				cursor = cursor.getNext();
+			}
+			return null;
+		}
+		
+		public Node<E> addNodeLeft(Position position, E element) {
+			while (cursor != null) {
+				if (cursor.getPosition().compareTo(position) < 0) {
+					Node<E> newNode = new Node<E>(position, element, null, null);
+					cursor.getNext().setPrevious(newNode);
+					newNode.setPrevious(cursor);
+					newNode.setNext(cursor.getNext());
+					cursor.setNext(newNode);
+					return newNode;
+				}
+				cursor = cursor.getPrevious();
+			}
+			return null;
 		}
 		
 		// Clear all the List 
 		public void clear() {
-			this.checkOrder();
 			// link head and tail directly to each other,
 			cursor = header;
 			header.setNext(trailer);
@@ -476,20 +507,21 @@ public class BoundedCube<T> implements Cube<T> {
 /**
  * Design choices justification:
  * 
- * Because the air space is very big, and the number of the aircraft is limited by 20000, 
- * therefore, we need a data structure that can only hold the information of the cells 
- * that contains at least one aircraft, instead of predefined the array for the whole air space.
- * 
+ * Because the air space is very big, and the number of the aircraft is limited by 20000, and it's
+ * likely that the emulator will work on adjacency positions, therefore, we need a data structure 
+ * that can only hold the information of the cells that contains at least one aircraft with a cursor
+ * to keep track of the current position that the emulator is working on. 
+ *
  * The approach that I used is to implement a Ordered Doubly Linked List [1] and linear search to
  * find the item, I also use an cursor to store a current working node in order to reduce the 
  * seek time (this method give a significant improvement in Continuous Access Test, the run time
- * to add 20.000 objects reduced from ~1200ms to ~30ms) This approach will give the run-time 
+ * to add 20.000 objects reduced from ~2000ms to ~500ms) This approach will give the run-time 
  * efficiency of O(n) and memory space efficiency of O(n)
  * 
  * I also noticed that the air space is only 35km height, then I decided to use an Array of the list
  * to represent the layers of the air space to reduce the maximum length of the List. This method 
  * give a significant improvement in Random Access Test, (for reduce time for inserting 20.000 
- * objects into arbitrary locations from 4000ms to ~200ms) This method does not require much more 
+ * objects into arbitrary locations from 4000ms to ~300ms) This method does not require much more 
  * memory, because it's only store the maximum of 36 references of every layer. 
  * 
  * One other approach is use a 3D array to store all the cells of the air space, however, it is 
