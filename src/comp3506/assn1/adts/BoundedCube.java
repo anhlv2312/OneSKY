@@ -363,14 +363,17 @@ public class BoundedCube<T> implements Cube<T> {
 			cursor = header;
 		}
 		
-//		public void show() {
-//			Node<E> currentNode = header;
-//			while (currentNode != null) {
-//				System.out.print(currentNode.toString());
-//				currentNode = currentNode.getNext();
-//			}
-//			System.out.println("");
-//		}
+		public void show() {
+			Node<E> currentNode = header;
+			while (currentNode != null) {
+				System.out.print(currentNode.toString());
+				currentNode = currentNode.getNext();
+			}
+			System.out.println("");
+		}
+		
+
+		
 		
 		private Node<E> findNode(Position position) {
 			if (position.compareTo(cursor.getPosition()) == 0) {
@@ -389,6 +392,7 @@ public class BoundedCube<T> implements Cube<T> {
 				if (position.compareTo(currentNode.getPosition()) == 0) {
 					return currentNode;
 				}
+				// cursor will move to the 
 				cursor = currentNode;
 				currentNode = currentNode.getNext();
 			} 
@@ -411,8 +415,13 @@ public class BoundedCube<T> implements Cube<T> {
 		// Remove the Node from linked list
 		public void removeNode(Position position) {
 			Node<E> currentNode = this.findNode(position);
-			currentNode.getPrevious().setNext(currentNode.getNext());
-			currentNode.getNext().setPrevious(currentNode.getPrevious());
+			if (currentNode == header || currentNode == trailer) {
+				return;
+			}
+			if (currentNode != null) {
+				currentNode.getPrevious().setNext(currentNode.getNext());
+				currentNode.getNext().setPrevious(currentNode.getPrevious());
+			}
 		}
 		
 		public E getElement(Position position) {
@@ -434,46 +443,24 @@ public class BoundedCube<T> implements Cube<T> {
 		
 		// Add a new node after a particular node
 		public Node<E> addNode(Position position, E element) {
+			Node<E> newNode = new Node<E>(position, element, null, null);
 			if (position.compareTo(cursor.getPosition()) < 0) {
-				return addNodeRight(position, element);
+				cursor.getPrevious().setNext(newNode);
+				newNode.setNext(cursor);
+				newNode.setPrevious(cursor.getPrevious());
+				cursor.setPrevious(newNode);
 			} else {
-				return addNodeLeft(position, element);
+				cursor.getNext().setPrevious(newNode);
+				newNode.setPrevious(cursor);
+				newNode.setNext(cursor.getNext());
+				cursor.setNext(newNode);
 			}
-		}
-		
-		// Add a new node after a particular node
-		public Node<E> addNodeRight(Position position, E element) {
-			while (cursor != null) {
-				if (cursor.getPosition().compareTo(position) > 0) {
-					Node<E> newNode = new Node<E>(position, element, null, null);
-					cursor.getPrevious().setNext(newNode);
-					newNode.setNext(cursor);
-					newNode.setPrevious(cursor.getPrevious());
-					cursor.setPrevious(newNode);
-					return newNode;
-				}
-				cursor = cursor.getNext();
-			}
-			return null;
-		}
-		
-		public Node<E> addNodeLeft(Position position, E element) {
-			while (cursor != null) {
-				if (cursor.getPosition().compareTo(position) < 0) {
-					Node<E> newNode = new Node<E>(position, element, null, null);
-					cursor.getNext().setPrevious(newNode);
-					newNode.setPrevious(cursor);
-					newNode.setNext(cursor.getNext());
-					cursor.setNext(newNode);
-					return newNode;
-				}
-				cursor = cursor.getPrevious();
-			}
-			return null;
+			return newNode;
 		}
 		
 		// Clear all the List 
 		public void clear() {
+			this.checkOrder();
 			// link head and tail directly to each other,
 			cursor = header;
 			header.setNext(trailer);
@@ -494,12 +481,16 @@ public class BoundedCube<T> implements Cube<T> {
  * that contains at least one aircraft, instead of predefined the array for the whole air space.
  * 
  * The approach that I used is to implement a Ordered Doubly Linked List [1] and linear search to
- * find the item, This approach will give the run-time efficiency of O(n) and memory space efficiency of O(n)
+ * find the item, I also use an cursor to store a current working node in order to reduce the 
+ * seek time (this method give a significant improvement in Continuous Access Test, the run time
+ * to add 20.000 objects reduced from ~1200ms to ~30ms) This approach will give the run-time 
+ * efficiency of O(n) and memory space efficiency of O(n)
  * 
  * I also noticed that the air space is only 35km height, then I decided to use an Array of the list
  * to represent the layers of the air space to reduce the maximum length of the List. This method 
- * does not require much more memory, because it's only store the maximum of 36 references 
- * of every layer.
+ * give a significant improvement in Random Access Test, (for reduce time for inserting 20.000 
+ * objects into arbitrary locations from 4000ms to ~200ms) This method does not require much more 
+ * memory, because it's only store the maximum of 36 references of every layer. 
  * 
  * One other approach is use a 3D array to store all the cells of the air space, however, it is 
  * very memory consuming as we have to pre-allocate memory for every single cell, it also takes time

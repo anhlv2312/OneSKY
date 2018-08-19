@@ -1,6 +1,9 @@
 package comp3506.assn1.adts;
 
 import static org.junit.Assert.*;
+
+import java.util.Random;
+
 import org.junit.Test;
 
 public class MyBoundedCubeTest {
@@ -34,27 +37,43 @@ public class MyBoundedCubeTest {
 		assertEquals(testCube.get(1, 9, 1), element1);
 		assertEquals(testCube.get(8, 9, 1), element4);
 	}
+
+	@Test
+	public void testEmptyHeader() {
+		Cube<Object> testCube = new BoundedCube<>(5, 5, 5);
+		Object element = new Object();
+		testCube.add(0, 0, 0, element);
+		testCube.remove(0, 0, 0, element);
+		testCube.add(5, 5, 5, element);
+		testCube.remove(5, 5, 5, element);
+	}
 	
 	@Test
 	public void testCursorPosition() {
-		Cube<Object> testCube = new BoundedCube<>(10, 10, 1);
-		Object element1 = new Object();
-		Object element2 = new Object();
-		Object element3 = new Object();
-		Object element4 = new Object();
+
+		Random r = new Random();
+		Cube<Object> testCube = new BoundedCube<>(5321, 3428, 35);
+		Object element = new Object();
 		
-		testCube.add(1, 1, 1, element1);
-		assertEquals(testCube.get(1, 1, 1), element1);
-		testCube.add(1, 9, 1, element1);
-		testCube.add(2, 9, 1, element2);
-		testCube.add(1, 8, 1, element3);
-		testCube.get(10, 10, 1);
-		testCube.add(8, 9, 1, element4);
-		assertEquals(testCube.get(1, 9, 1), element1);
-		assertEquals(testCube.get(8, 9, 1), element4);
+		for (int i = 0; i <= 1000; i++) {
+			testCube.add(r.nextInt(5321), r.nextInt(3428), r.nextInt(35), new Object());
+		}
+		
+		testCube.add(22, 33, 4, element);
+		
+		for (int i = 0; i <= 1000; i++) {
+			testCube.add(r.nextInt(5321), r.nextInt(3428), r.nextInt(35), new Object());
+		}
+		assertEquals(testCube.get(22, 33, 4), element);
 	}
 	
-	
+	@Test
+	public void testCursorPosition2() {
+
+		Cube<Object> testCube = new BoundedCube<>(10, 10, 1);
+		testCube.add(10, 10, 1, new Object());
+		testCube.add(10, 10, 1, new Object());
+	}
 	
 	@Test
 	public void testSkipSearchingElement() {
@@ -191,13 +210,23 @@ public class MyBoundedCubeTest {
 	}
 	
 	@Test
-	public void testPerformanceMultiCell() {
+	public void testPerformanceContinuousCell() {
 		Cube<Object> testCube = new BoundedCube<>(5321, 3428, 35);
-		for (int i = 0; i <= 35; i++) {
+		for (int i = 0; i <= 6; i++) {
 			for (int j = 0; j <= 3428; j++) {
 				testCube.add(j, j, i, new Object());
 			}
 		}
+	}
+	
+	@Test
+	public void testPerformanceRandomAccess() {
+		Random r = new Random();
+		Cube<Object> testCube = new BoundedCube<>(5321, 3428, 35);
+		for (int i = 0; i <= 20000; i++) {
+			testCube.add(r.nextInt(5321), r.nextInt(3428), r.nextInt(35), new Object());
+		}
+		testCube.clear();
 	}
 	
 	@Test
