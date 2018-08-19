@@ -7,10 +7,14 @@ public class MyBoundedCubeTest {
 	
 	@Test
 	public void testGetWithOneElement() {
-		Cube<Object> testCube = new BoundedCube<>(5, 5, 5);
+		Cube<Object> testCube = new BoundedCube<>(10, 10, 5);
 		Object element = new Object();
 		testCube.add(1, 1, 1, element);
 		assertEquals(testCube.get(1, 1, 1), element);
+		testCube.add(10, 9, 1, element);
+		assertEquals(testCube.get(10, 9, 1), element);
+		testCube.add(2, 9, 1, element);
+		assertEquals(testCube.get(2, 9, 1), element);
 	}
 	
 	@Test
@@ -191,4 +195,10 @@ public class MyBoundedCubeTest {
 		}
 		
 	}
+
+	
+
+
+
+
 }

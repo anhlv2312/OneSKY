@@ -3,7 +3,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="tst"/>
-	<classpathentry kind="lib" path="/Users/anhlv/Google Drive/Study/Assignments/COMP7505-A1/bin/hamcrest-core-1.3.jar"/>
-	<classpathentry kind="lib" path="/Users/anhlv/Google Drive/Study/Assignments/COMP7505-A1/bin/junit-4.12.jar"/>
+	<classpathentry kind="lib" path="/Users/anhlv/Google Drive/Study/Assessments/COMP7505-A1/bin/hamcrest-core-1.3.jar"/>
+	<classpathentry kind="lib" path="/Users/anhlv/Google Drive/Study/Assessments/COMP7505-A1/bin/junit-4.12.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

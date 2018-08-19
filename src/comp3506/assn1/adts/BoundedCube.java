@@ -243,7 +243,6 @@ public class BoundedCube<T> implements Cube<T> {
 		return new Position(x, y);
 	}
 	
-	@SuppressWarnings("unchecked")
 	private OrderedLinkedList<TraversableQueue<T>> getLayer(int layerIndex) {
 		return (OrderedLinkedList<TraversableQueue<T>>)layers[layerIndex];
 
@@ -270,6 +269,11 @@ public class BoundedCube<T> implements Cube<T> {
 			} 
 			return this.x - position.x;
 		}
+		
+		public String toString() {
+			return "(" + x + "," + y + ")";
+		}
+	
 		
 	}
 	
@@ -319,6 +323,21 @@ public class BoundedCube<T> implements Cube<T> {
 		public Position getPosition() {
 			return position;
 		}
+
+		public String toString() {
+			String pre, nex;
+			if (previousNode == null) {
+				pre = "(null)";
+			} else { 
+				pre = previousNode.getPosition().toString();
+			}
+			if (nextNode == null) {
+				nex = "(null)";
+			} else { 
+				nex = nextNode.getPosition().toString();
+			}
+			return "[" + pre + this.getPosition().toString() + nex +"]";
+		}
 		
 	}
 	
@@ -341,13 +360,32 @@ public class BoundedCube<T> implements Cube<T> {
 			trailer = new Node<> (new Position(x,y), null, null, null);
 			header.setNext(trailer);
 			trailer.setPrevious(header);
+			cursor = header;
 		}
-
-		// Find a Node by iterating from the beginning
-		private Node<E> findNode(Position position) {
+		
+		public void show() {
 			Node<E> currentNode = header;
+			while (currentNode != null) {
+				System.out.print(currentNode.toString());
+				currentNode = currentNode.getNext();
+			}
+			System.out.println("");
+		}
+		
+		private Node<E> findNode(Position position) {
+			if (position.compareTo(cursor.getPosition()) == 0) {
+				return cursor;
+			} else if (position.compareTo(cursor.getPosition()) < 0) {
+				return findNodeLeft(position);
+			} else {
+				return findNodeRight(position);
+			}
+		}
+		
+		// Find a Node by iterating to the beginning
+		private Node<E> findNodeRight(Position position) {
+			Node<E> currentNode = cursor;
 			while (currentNode.getNext() != null) {
-				// keep looking for the node while there is still a next node
 				if (position.compareTo(currentNode.getPosition()) == 0) {
 					return currentNode;
 				}
@@ -356,18 +394,16 @@ public class BoundedCube<T> implements Cube<T> {
 			return null;		
 		}
 		
-		// Find the nearest node that is close to the left of the position
-		private Node<E> findPreviousNode(Position position) {
-			Node<E> currentNode = header;
-			Node<E> previousNode = header;
-			while (currentNode.getNext() != null) {
-				currentNode = currentNode.getNext();
-				previousNode = currentNode.getPrevious();
-				if (position.compareTo(currentNode.getPosition()) > 0) {
-					break;
+		// Find a Node by iterating to the end
+		private Node<E> findNodeLeft(Position position) {
+			Node<E> currentNode = cursor;
+			while (currentNode.getPrevious() != null) {
+				if (position.compareTo(currentNode.getPosition()) == 0) {
+					return currentNode;
 				}
+				currentNode = currentNode.getPrevious();
 			} 
-			return previousNode;		
+			return null;		
 		}
 		
 		// Remove the Node from linked list
@@ -388,22 +424,50 @@ public class BoundedCube<T> implements Cube<T> {
 		public void setElement(Position position, E element) {
 			Node<E> currentNode = this.findNode(position);
 			if (currentNode == null) {
-				Node<E> previousNode = this.findPreviousNode(position);
-				currentNode = this.addNodeAfter(position, previousNode, element);
+				currentNode = this.addNode(position, element);
 			} else {
 				currentNode.setElement(element);
 			}
 		}
 		
 		// Add a new node after a particular node
-		public Node<E> addNodeAfter(Position position, Node<E> previousNode, E element) {
-			Node<E> newNode = new Node<E>(position, element, null, null);
-			previousNode.getNext().setPrevious(newNode);
-			newNode.setPrevious(previousNode);
-			newNode.setNext(previousNode.getNext());
-			previousNode.setNext(newNode);
-			return newNode;
-			
+		public Node<E> addNode(Position position, E element) {
+			if (position.compareTo(cursor.getPosition()) < 0) {
+				return addNodeRight(position, element);
+			} else {
+				return addNodeLeft(position, element);
+			}
+		}
+		
+		// Add a new node after a particular node
+		public Node<E> addNodeRight(Position position, E element) {
+			while (cursor != null) {
+				if (cursor.getPosition().compareTo(position) > 0) {
+					Node<E> newNode = new Node<E>(position, element, null, null);
+					cursor.getPrevious().setNext(newNode);
+					newNode.setNext(cursor);
+					newNode.setPrevious(cursor.getPrevious());
+					cursor.setPrevious(newNode);
+					return newNode;
+				}
+				cursor = cursor.getNext();
+			}
+			return null;
+		}
+		
+		public Node<E> addNodeLeft(Position position, E element) {
+			while (cursor != null) {
+				if (cursor.getPosition().compareTo(position) < 0) {
+					Node<E> newNode = new Node<E>(position, element, null, null);
+					cursor.getNext().setPrevious(newNode);
+					newNode.setPrevious(cursor);
+					newNode.setNext(cursor.getNext());
+					cursor.setNext(newNode);
+					return newNode;
+				}
+				cursor = cursor.getPrevious();
+			}
+			return null;
 		}
 		
 		// Clear all the List 
@@ -411,7 +475,7 @@ public class BoundedCube<T> implements Cube<T> {
 			// link head and tail directly to each other,
 			header.setNext(trailer);
 			trailer.setPrevious(header);
-			// remove the queue of head and tail
+			cursor = header;
 			header.setElement(null);
 			trailer.setElement(null);
 		}
@@ -428,8 +492,7 @@ public class BoundedCube<T> implements Cube<T> {
  * that contains at least one aircraft, instead of predefined the array for the whole air space.
  * 
  * The approach that I used is to implement a Ordered Doubly Linked List [1] and linear search to
- * find the item, I first calculate the middle point, This approach will give the run-time 
- * efficiency of O(n) and memory space efficiency of O(n)
+ * find the item, This approach will give the run-time efficiency of O(n) and memory space efficiency of O(n)
  * 
  * I also noticed that the air space is only 35km height, then I decided to use an Array of the list
  * to represent the layers of the air space to reduce the maximum length of the List. This method 
