@@ -6,7 +6,7 @@ package comp3506.assn1.adts;
  * items. A bounded cube has a specified maximum size in each dimension. The
  * root of each dimension is indexed from zero.
  * 
- * Memory Usage Efficiency: O(n) (n is the number of aircraft)
+ * Memory Usage: O(n) (n is the number of aircraft)
  * 
  * @author Vu Anh LE <s4490763@student.uq.edu.au>
  *
