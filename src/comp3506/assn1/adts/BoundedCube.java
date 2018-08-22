@@ -26,7 +26,7 @@ public class BoundedCube<T> implements Cube<T> {
 	/**
 	 * BoundCube constructor
 	 * 
-	 * Time-complexity O(1) 
+	 * Time-complexity O(1)
 	 * 
 	 * @param length  Maximum size in the 'x' dimension.
 	 * @param breadth Maximum size in the 'y' dimension.
@@ -51,8 +51,7 @@ public class BoundedCube<T> implements Cube<T> {
 	/**
 	 * Add an element at a fixed position.
 	 * 
-	 * Time-complexity O(n) 
-	 * (n is the number of aircraft)
+	 * Time-complexity O(n) (n is the number of aircraft)
 	 * 
 	 * @param element The element to be added at the indicated position.
 	 * @param x       X Coordinate of the position of the element.
@@ -79,8 +78,7 @@ public class BoundedCube<T> implements Cube<T> {
 	/**
 	 * Return the 'oldest' element at the indicated position.
 	 * 
-	 * Time-complexity O(n) 
-	 * (n is the number of aircraft)
+	 * Time-complexity O(n) (n is the number of aircraft)
 	 * 
 	 * @param x X Coordinate of the position of the element.
 	 * @param y Y Coordinate of the position of the element.
@@ -104,8 +102,7 @@ public class BoundedCube<T> implements Cube<T> {
 	/**
 	 * Return all the elements at the indicated position.
 	 * 
-	 * Time-complexity O(n) 
-	 * (n is the number of aircraft)
+	 * Time-complexity O(n) (n is the number of aircraft)
 	 * 
 	 * @param x X Coordinate of the position of the element(s).
 	 * @param y Y Coordinate of the position of the element(s).
@@ -130,8 +127,7 @@ public class BoundedCube<T> implements Cube<T> {
 	/**
 	 * Indicates whether there are more than one elements at the indicated position.
 	 * 
-	 * Time-complexity O(n) 
-	 * (n is the number of aircraft)
+	 * Time-complexity O(n) (n is the number of aircraft)
 	 * 
 	 * @param x X Coordinate of the position of the element(s).
 	 * @param y Y Coordinate of the position of the element(s).
@@ -156,8 +152,7 @@ public class BoundedCube<T> implements Cube<T> {
 	/**
 	 * Removes the specified element at the indicated position.
 	 * 
-	 * Time-complexity O(n) 
-	 * (n is the number of aircraft)
+	 * Time-complexity O(n) (n is the number of aircraft)
 	 * 
 	 * @param element The element to be removed from the indicated position.
 	 * @param x       X Coordinate of the position.
@@ -185,8 +180,8 @@ public class BoundedCube<T> implements Cube<T> {
 				newQueue.enqueue(e);
 			}
 		}
-		
-		// If the newQueue is empty 
+
+		// If the newQueue is empty
 		if (newQueue.size() == 0) {
 			// Then remove the node from x axis
 			airSpace.get(z).get(y).remove(x);
@@ -206,8 +201,7 @@ public class BoundedCube<T> implements Cube<T> {
 	/**
 	 * Removes all elements at the indicated position.
 	 * 
-	 * Time-complexity O(n) 
-	 * (n is the number of aircraft)
+	 * Time-complexity O(n) (n is the number of aircraft)
 	 * 
 	 * @param x X Coordinate of the position.
 	 * @param y Y Coordinate of the position.
@@ -329,10 +323,10 @@ public class BoundedCube<T> implements Cube<T> {
 		// Find the node in position, return a new node if not found
 		private Node<E> getNode(int position) {
 			if (cursor.getPosition() == position) {
-				// if the cursor there, return it 
+				// if the cursor there, return it
 				return cursor;
 			}
-			// cursor is on the left of the position, 
+			// cursor is on the left of the position,
 			if (cursor.getPosition() < position) {
 				while (cursor.getNext() != null) {
 					// move the cursor to the right
@@ -373,6 +367,7 @@ public class BoundedCube<T> implements Cube<T> {
 			node.setPrevious(newNode);
 			return newNode;
 		}
+
 		// Add a new Node after the given node
 		private Node<E> addNext(Node<E> node, int position) {
 			Node<E> newNode = new Node<E>(position, null, null, null);
@@ -382,7 +377,7 @@ public class BoundedCube<T> implements Cube<T> {
 			node.setNext(newNode);
 			return newNode;
 		}
-		
+
 		// Remove the node at the given position
 		public void remove(int position) {
 			Node<E> node = this.getNode(position);
@@ -408,7 +403,7 @@ public class BoundedCube<T> implements Cube<T> {
 			trailer.setElement(null);
 		}
 
-		// Check if the List if empty 
+		// Check if the List if empty
 		public boolean isEmpty() {
 			return (header.getNext() == trailer);
 		}
@@ -420,19 +415,21 @@ public class BoundedCube<T> implements Cube<T> {
  * Design choices justification:
  * 
  * Because the air space is very big, and the number of the aircraft is limited
- * by 20000, therefore, we need a data structure that can only hold the information 
- * of the cells that contains at least one aircraft. And since the emulator is likely 
- * to work on adjacency cells, then we need a method to keep track of the working cell
- * in order to improve the performance of the ADT. 
+ * by 20000, therefore, we need a data structure that can only hold the
+ * information of the cells that contains at least one aircraft. And since the
+ * emulator is likely to work on adjacency cells, then we need a method to keep
+ * track of the working cell in order to improve the performance of the ADT.
  *
- * The approach that I used is to create a 3D Positional Linked List that implements 
- * a Positional Doubly Linked List [1] and modified the data structure to I keep it 
- * ordered by the position of the node, so that I can use a cursor to keep track 
- * of the current working node in order to reduce the seek time (By using the cursor,
- * the ADT performed a significant improvement in Continuous Access Test).
+ * The approach that I used is to create a 3D Positional Linked List that
+ * implements a Positional Doubly Linked List [1] and modified the data
+ * structure to I keep it ordered by the position of the node, so that I can use
+ * a cursor to keep track of the current working node in order to reduce the
+ * seek time (By using the cursor, the ADT performed a significant improvement
+ * in Continuous Access Test, the time of adding 20500 aircrafts into continuous
+ * cells is reduced from ~1800ms to ~20ms).
  * 
- * When the last aircraft is removed from the cell, the empty node will be removed
- * from the data structure to make it more memory efficient.
+ * When the last aircraft is removed from the cell, the empty node will be
+ * removed from the data structure to make it more memory efficient.
  * 
  * One other approach is use a 3D array to store all the cells of the air space,
  * however, it is very memory consuming as we have to pre-allocate memory for
