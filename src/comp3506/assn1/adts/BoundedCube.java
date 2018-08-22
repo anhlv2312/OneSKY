@@ -24,6 +24,9 @@ public class BoundedCube<T> implements Cube<T> {
 	Object[] layers = new Object[36];
 
 	/**
+	 * BoundCube constructor
+	 * 
+	 * Time-complexity O(1) 
 	 * 
 	 * @param length  Maximum size in the 'x' dimension.
 	 * @param breadth Maximum size in the 'y' dimension.
@@ -96,7 +99,6 @@ public class BoundedCube<T> implements Cube<T> {
 			return null;
 		}
 		return queue.iterator().next();
-
 	}
 
 	/**
@@ -184,10 +186,16 @@ public class BoundedCube<T> implements Cube<T> {
 			}
 		}
 		
-		// Replace newQueue to that cell
+		// If the newQueue is empty 
 		if (newQueue.size() == 0) {
-			airSpace.get(z).get(y).set(x, null);
+			// Then remove the node from x axis
+			airSpace.get(z).get(y).remove(x);
+			// If the x axis is empty, remove it from y axis
+			if (airSpace.get(z).get(y).isEmpty()) {
+				airSpace.get(z).remove(y);
+			} // Keep the z axis because it's only 35 layers
 		} else {
+			// Replace newQueue to that cell
 			airSpace.get(z).get(y).set(x, newQueue);
 		}
 
@@ -296,17 +304,19 @@ public class BoundedCube<T> implements Cube<T> {
 		public OrderedPositionalList() {
 			/* [1 pp. 277] */
 			header = new Node<>(-1, null, null, null);
-			trailer = new Node<>(100000, null, null, null);
+			trailer = new Node<>(999999, null, null, null);
 			header.setNext(trailer);
 			trailer.setPrevious(header);
 			cursor = header;
 		}
 
+		// Set the element at the given position
 		public void set(int position, E element) {
 			Node<E> node = this.getNode(position);
 			node.setElement(element);
 		}
 
+		// Get the element at the given position
 		private E get(int position) {
 			Node<E> node = this.getNode(position);
 			if (node != null) {
@@ -316,21 +326,31 @@ public class BoundedCube<T> implements Cube<T> {
 			}
 		}
 
+		// Find the node in position, return a new node if not found
 		private Node<E> getNode(int position) {
 			if (cursor.getPosition() == position) {
+				// if the cursor there, return it 
 				return cursor;
 			}
+			// cursor is on the left of the position, 
 			if (cursor.getPosition() < position) {
 				while (cursor.getNext() != null) {
+					// move the cursor to the right
 					cursor = cursor.getNext();
 					if (cursor.getPosition() == position) {
+						// If the position is exist, return it
 						return cursor;
 					}
+					// If the cursor is move over the position,
+					// That mean the position is not existed
+					// then create a new node to the left of the cursor
 					if (cursor.getPosition() > position) {
 						return addPrevious(cursor, position);
 					}
 				}
 			} else if (cursor.getPosition() > position) {
+				// The same idea with move the cursor to the right
+				// but move the cursor to the left instead
 				while (cursor.getPrevious() != null) {
 					cursor = cursor.getPrevious();
 					if (cursor.getPosition() == position) {
@@ -344,6 +364,7 @@ public class BoundedCube<T> implements Cube<T> {
 			return null;
 		}
 
+		// Add a new Node before the given node
 		private Node<E> addPrevious(Node<E> node, int position) {
 			Node<E> newNode = new Node<E>(position, null, null, null);
 			node.getPrevious().setNext(newNode);
@@ -352,7 +373,7 @@ public class BoundedCube<T> implements Cube<T> {
 			node.setPrevious(newNode);
 			return newNode;
 		}
-
+		// Add a new Node after the given node
 		private Node<E> addNext(Node<E> node, int position) {
 			Node<E> newNode = new Node<E>(position, null, null, null);
 			node.getNext().setPrevious(newNode);
@@ -361,9 +382,11 @@ public class BoundedCube<T> implements Cube<T> {
 			node.setNext(newNode);
 			return newNode;
 		}
-
+		
+		// Remove the node at the given position
 		public void remove(int position) {
 			Node<E> node = this.getNode(position);
+			cursor = node.getPrevious();
 			if (node == header || node == trailer) {
 				return;
 			}
@@ -375,14 +398,20 @@ public class BoundedCube<T> implements Cube<T> {
 
 		// Clear all the List
 		public void clear() {
-			// link head and tail directly to each other,
+			// Link header and trailer directly to each other,
 			header.setNext(trailer);
 			trailer.setPrevious(header);
+			// Reset the cursor
 			cursor = header;
+			// Empty header and trailer node
 			header.setElement(null);
 			trailer.setElement(null);
 		}
 
+		// Check if the List if empty 
+		public boolean isEmpty() {
+			return (header.getNext() == trailer);
+		}
 	}
 
 }
@@ -391,25 +420,19 @@ public class BoundedCube<T> implements Cube<T> {
  * Design choices justification:
  * 
  * Because the air space is very big, and the number of the aircraft is limited
- * by 20000, and it's likely that the emulator will work on adjacency positions,
- * therefore, we need a data structure that can only hold the information of the
- * cells that contains at least one aircraft with a cursor to keep track of the
- * current position that the emulator is working on.
+ * by 20000, therefore, we need a data structure that can only hold the information 
+ * of the cells that contains at least one aircraft. And since the emulator is likely 
+ * to work on adjacency cells, then we need a method to keep track of the working cell
+ * in order to improve the performance of the ADT. 
  *
- * The approach that I used is to implement a Ordered Doubly Linked List [1] and
- * linear search to find the item, I also use an cursor to store a current
- * working node in order to reduce the seek time (this method give a significant
- * improvement in Continuous Access Test, the run time to add 20.000 objects
- * reduced from ~2000ms to ~500ms) This approach will give the run-time
- * efficiency of O(n) and memory space efficiency of O(n)
+ * The approach that I used is to create a 3D Positional Linked List that implements 
+ * a Positional Doubly Linked List [1] and modified the data structure to I keep it 
+ * ordered by the position of the node, so that I can use a cursor to keep track 
+ * of the current working node in order to reduce the seek time (By using the cursor,
+ * the ADT performed a significant improvement in Continuous Access Test).
  * 
- * I also noticed that the air space is only 35km height, then I decided to use
- * an Array of the list to represent the layers of the air space to reduce the
- * maximum length of the List. This method give a significant improvement in
- * Random Access Test, (it reduce the time of inserting 20.000 objects into
- * arbitrary locations from 4000ms to ~300ms) This method does not require much
- * more memory, because it's only store the maximum of 36 references of 36
- * layers.
+ * When the last aircraft is removed from the cell, the empty node will be removed
+ * from the data structure to make it more memory efficient.
  * 
  * One other approach is use a 3D array to store all the cells of the air space,
  * however, it is very memory consuming as we have to pre-allocate memory for
