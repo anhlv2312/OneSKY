@@ -96,20 +96,20 @@ public class TraversableQueue<T> implements IterableQueue<T> {
 		private E element;
 		private Node<E> nextNode;
 
-		public Node(E element, Node<E> nextNode) {
+		Node(E element, Node<E> nextNode) {
 			this.element = element;
 			this.setNext(nextNode);
 		}
 
-		public E getElement() {
+		E getElement() {
 			return element;
 		}
 
-		public Node<E> getNext() {
+		Node<E> getNext() {
 			return nextNode;
 		}
 
-		public void setNext(Node<E> nextNode) {
+		void setNext(Node<E> nextNode) {
 			this.nextNode = nextNode;
 		}
 	}
@@ -124,7 +124,7 @@ public class TraversableQueue<T> implements IterableQueue<T> {
 		private Node<E> currentNode = null;
 		private Node<E> nextNode = null;
 
-		public TraversableQueueIterator(Node<E> firstNode) {
+		TraversableQueueIterator(Node<E> firstNode) {
 			this.nextNode = firstNode;
 		}
 

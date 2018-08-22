@@ -18,8 +18,10 @@ public class BoundedCube<T> implements Cube<T> {
 	private final static int MAX_X = 5321;
 	private final static int MAX_Y = 3428;
 	private final static int MAX_Z = 35;
-	OrderedPositionalList<OrderedPositionalList<OrderedPositionalList<TraversableQueue<T>>>> airSpace;
-	int lenght, breadth, height;
+	private OrderedPositionalList<OrderedPositionalList<OrderedPositionalList<TraversableQueue<T>>>> airSpace;
+	private int length;
+    private int breadth;
+    private int height;
 
 	Object[] layers = new Object[36];
 
@@ -40,7 +42,7 @@ public class BoundedCube<T> implements Cube<T> {
 			throw new IllegalArgumentException();
 		}
 
-		this.lenght = length;
+		this.length = length;
 		this.breadth = breadth;
 		this.height = height;
 
@@ -228,7 +230,7 @@ public class BoundedCube<T> implements Cube<T> {
 	}
 
 	private void checkOutOfBound(int x, int y, int z) {
-		if ((x < 0 || y < 0 || z < 0) || (x > this.lenght || y > this.breadth || z > this.height)) {
+		if ((x < 0 || y < 0 || z < 0) || (x > this.length || y > this.breadth || z > this.height)) {
 			throw new IndexOutOfBoundsException();
 		}
 	}
@@ -246,37 +248,37 @@ public class BoundedCube<T> implements Cube<T> {
 		private Node<E> previousNode;
 		private int position;
 
-		public Node(int position, E element, Node<E> previousNode, Node<E> nextNode) {
+		Node(int position, E element, Node<E> previousNode, Node<E> nextNode) {
 			this.element = element;
 			this.nextNode = nextNode;
 			this.position = position;
 		}
 
-		public E getElement() {
+		E getElement() {
 			return element;
 		}
 
-		public void setElement(E element) {
+		void setElement(E element) {
 			this.element = element;
 		}
 
-		public Node<E> getNext() {
+		Node<E> getNext() {
 			return nextNode;
 		}
 
-		public Node<E> getPrevious() {
+		Node<E> getPrevious() {
 			return previousNode;
 		}
 
-		public void setNext(Node<E> nextNode) {
+		void setNext(Node<E> nextNode) {
 			this.nextNode = nextNode;
 		}
 
-		public void setPrevious(Node<E> previousNode) {
+		void setPrevious(Node<E> previousNode) {
 			this.previousNode = previousNode;
 		}
 
-		public int getPosition() {
+		int getPosition() {
 			return position;
 		}
 
@@ -295,7 +297,7 @@ public class BoundedCube<T> implements Cube<T> {
 		private Node<E> trailer;
 		private Node<E> cursor;
 
-		public OrderedPositionalList() {
+		OrderedPositionalList() {
 			/* [1 pp. 277] */
 			header = new Node<>(-1, null, null, null);
 			trailer = new Node<>(999999, null, null, null);
@@ -305,7 +307,7 @@ public class BoundedCube<T> implements Cube<T> {
 		}
 
 		// Set the element at the given position
-		public void set(int position, E element) {
+        void set(int position, E element) {
 			Node<E> node = this.getNode(position);
 			node.setElement(element);
 		}
@@ -379,7 +381,7 @@ public class BoundedCube<T> implements Cube<T> {
 		}
 
 		// Remove the node at the given position
-		public void remove(int position) {
+        void remove(int position) {
 			Node<E> node = this.getNode(position);
 			cursor = node.getPrevious();
 			if (node == header || node == trailer) {
@@ -392,7 +394,7 @@ public class BoundedCube<T> implements Cube<T> {
 		}
 
 		// Clear all the List
-		public void clear() {
+        void clear() {
 			// Link header and trailer directly to each other,
 			header.setNext(trailer);
 			trailer.setPrevious(header);
@@ -404,7 +406,7 @@ public class BoundedCube<T> implements Cube<T> {
 		}
 
 		// Check if the List if empty
-		public boolean isEmpty() {
+        boolean isEmpty() {
 			return (header.getNext() == trailer);
 		}
 	}
@@ -439,7 +441,8 @@ public class BoundedCube<T> implements Cube<T> {
  * There may be a solution using tree data structure that is much more
  * efficient, however, it would take time to research and implement.
  * 
- * REFERENCE [1] M. T. Goodrich, R. Tamassia, and M. H. Goldwasser, Data
+ * REFERENCE
+ * [1] M. T. Goodrich, R. Tamassia, and M. H. Goldwasser, Data
  * structures and algorithms in Java. John Wiley & Sons, 2014.
  * 
  */
