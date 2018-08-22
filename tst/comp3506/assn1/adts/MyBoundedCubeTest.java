@@ -7,6 +7,8 @@ import java.util.Random;
 import org.junit.Test;
 
 public class MyBoundedCubeTest {
+
+
 	
 	@Test
 	public void testGetWithOneElement() {
