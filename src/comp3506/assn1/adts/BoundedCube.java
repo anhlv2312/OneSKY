@@ -21,7 +21,7 @@ public class BoundedCube<T> implements Cube<T> {
 	private final static int MAX_X = 5321;
 	private final static int MAX_Y = 3428;
 	private final static int MAX_Z = 35;
-	
+	OrderedPositionalList<OrderedPositionalList<OrderedPositionalList<TraversableQueue<T>>>> airSpace;
 	int lenght, breadth, height;
 	
 	Object[] layers = new Object[36];
@@ -45,17 +45,11 @@ public class BoundedCube<T> implements Cube<T> {
 		this.breadth = breadth;
 		this.height = height;
 
-		for (int z = 0; z <= height; z++) {
-			// Initialize layers of the air space, each layer is 1km height
-			layers[z] = new OrderedLinkedList<TraversableQueue<T>>(length, breadth);
-		}
+		airSpace = new OrderedPositionalList<>();
+		
 		
 	}
 	
-	// Cast the layer from Object to OrderedLinkedList
-	private OrderedLinkedList<TraversableQueue<T>> getLayer(int layerIndex) {
-		return (OrderedLinkedList<TraversableQueue<T>>)layers[layerIndex];
-	}
 	
 	/**
 	 * Add an element at a fixed position.
@@ -72,20 +66,7 @@ public class BoundedCube<T> implements Cube<T> {
 	 */
 	@Override
 	public void add(int x, int y, int z, T element) throws IndexOutOfBoundsException {
-		Position position = convertPosition(x, y, z);
-		// Get the queue form that position
-		TraversableQueue<T> queue = getLayer(z).getElement(position);	
-		if (queue == null) {
-			// If there is no queue in that position, initialize a new Queue
-			TraversableQueue<T> newQueue = new TraversableQueue<T>();
-			// Enqueue the element to the created queue
-			newQueue.enqueue(element);
-			// Add the queue to that position
-			getLayer(z).setElement(position, newQueue);
-		} else {
-			// Enqueue the element
-			queue.enqueue(element);
-		}
+		airSpace.getElement(z).getElement(y).getElement(x).enqueue(element);	
 	}
 
 	/**
@@ -102,10 +83,8 @@ public class BoundedCube<T> implements Cube<T> {
 	 * 
 	 */
 	@Override
-	public T get(int x, int y, int z) throws IndexOutOfBoundsException {
-		Position position = convertPosition(x, y, z);
-		
-		TraversableQueue<T> queue = getLayer(z).getElement(position);
+	public T get(int x, int y, int z) throws IndexOutOfBoundsException {		
+		TraversableQueue<T> queue = airSpace.getElement(z).getElement(y).getElement(x);
 		// If there is no queue there, return null
 		if (queue == null) {
 			return null;
@@ -133,9 +112,7 @@ public class BoundedCube<T> implements Cube<T> {
 	 */
 	@Override
 	public IterableQueue<T> getAll(int x, int y, int z) throws IndexOutOfBoundsException {
-		Position position = convertPosition(x, y, z);
-		// Return the whole queue in that position
-		return getLayer(z).getElement(position);
+		return airSpace.getElement(z).getElement(y).getElement(x);
 	}
 
 	/**
@@ -153,13 +130,12 @@ public class BoundedCube<T> implements Cube<T> {
 	 */
 	@Override
 	public boolean isMultipleElementsAt(int x, int y, int z) throws IndexOutOfBoundsException {
-		Position position = convertPosition(x, y, z);
-		TraversableQueue<T> cell = getLayer(z).getElement(position);
+		TraversableQueue<T> queue = airSpace.getElement(z).getElement(y).getElement(x);
 		// Return false if null or queue size <= 1, otherwise return true
-		if (cell == null) {
+		if (queue == null) {
 			return false;
 		} else { 
-			return (cell.size() > 1);
+			return (queue.size() > 1);
 		}
 	}
 
@@ -178,11 +154,9 @@ public class BoundedCube<T> implements Cube<T> {
 	 * 
 	 */
 	@Override
-	public boolean remove(int x, int y, int z, T element) throws IndexOutOfBoundsException {
-		Position position = convertPosition(x, y, z);
-		
+	public boolean remove(int x, int y, int z, T element) throws IndexOutOfBoundsException {		
 		// Get the queue in the position
-		TraversableQueue<T> queue = getLayer(z).getElement(position);
+		TraversableQueue<T> queue = airSpace.getElement(z).getElement(y).getElement(x);
 		if (queue == null) {
 			return false;
 		}
@@ -197,12 +171,9 @@ public class BoundedCube<T> implements Cube<T> {
 		}
 		
 		// Replace newQueue to that position
-		getLayer(z).setElement(position, newQueue);
+		airSpace.getElement(z).getElement(y).setElement(x, newQueue);
 		
-		// Remove empty node from the layer
-		if (newQueue.size() == 0) {
-			getLayer(z).removeNode(position);
-		}
+
 		
 		// Return true if the size is reduced
 		return (newQueue.size() < queue.size());
@@ -222,9 +193,9 @@ public class BoundedCube<T> implements Cube<T> {
 	 */
 	@Override
 	public void removeAll(int x, int y, int z) throws IndexOutOfBoundsException {
-		Position position = convertPosition(x, y, z);
+		
 		// Set the element of the node in that position to null
-		getLayer(z).setElement(position, null);
+		airSpace.getElement(z).getElement(y).setElement(x, null);
 	}
 
 	/**
@@ -235,46 +206,7 @@ public class BoundedCube<T> implements Cube<T> {
 	 */
 	@Override
 	public void clear() {
-		for (int z = 0; z <= this.height; z++) {
-			getLayer(z).clear();
-		}
-	}
-
-	private Position convertPosition(int x, int y, int z) throws IndexOutOfBoundsException {
-		// Validate the x,y,z input and return the position object
-		if ((x < 0 || y < 0 || z < 0) || (x > this.lenght || y > this.breadth || z > this.height)) {
-			throw new IndexOutOfBoundsException();
-		}
-		return new Position(x, y);
-	}
-	
-	/**
-	 * The Position class holds the coordinates information based on x, y, z axis, 
-	 *
-	 */
-	private static class Position implements Comparable<Position> {
-		/* [1 pp. 227] */
-		private int x, y;
-		
-		public Position(int x, int y) {
-			this.x = x;
-			this.y = y;
-		}
-		
-		// Compare with other position, z axis has the highest weight, then y and then x,
-		@Override
-		public int compareTo(Position position) {
-			if (this.y != position.y) {
-				return this.y - position.y;
-			} 
-			return this.x - position.x;
-		}
-		
-//		public String toString() {
-//			return "(" + x + "," + y + ")";
-//		}
-	
-		
+		airSpace.clear();
 	}
 	
 	/**
@@ -288,9 +220,9 @@ public class BoundedCube<T> implements Cube<T> {
 		private E element;
 		private Node<E> nextNode;
 		private Node<E> previousNode;
-		private Position position;
+		private int position;
 		
-		public Node(Position position, E element, Node<E> previousNode, Node<E> nextNode) {
+		public Node(int position, E element, Node<E> previousNode, Node<E> nextNode) {
 			this.element = element; 
 			this.nextNode = nextNode;
 			this.position = position;
@@ -300,16 +232,16 @@ public class BoundedCube<T> implements Cube<T> {
 			return element;
 		}
 
+		public void setElement(E element) {
+			this.element = element;
+		}
+		
 		public Node<E> getNext() {
 			return nextNode;
 		}
 		
 		public Node<E> getPrevious() {
 			return previousNode;
-		}
-
-		public void setElement(E element) {
-			this.element = element;
 		}
 		
 		public void setNext(Node<E> nextNode) {
@@ -320,24 +252,9 @@ public class BoundedCube<T> implements Cube<T> {
 			this.previousNode = previousNode;
 		}
 		
-		public Position getPosition() {
+		public int getPosition() {
 			return position;
 		}
-
-//		public String toString() {
-//			String pre, nex;
-//			if (previousNode == null) {
-//				pre = "(null)";
-//			} else { 
-//				pre = previousNode.getPosition().toString();
-//			}
-//			if (nextNode == null) {
-//				nex = "(null)";
-//			} else { 
-//				nex = nextNode.getPosition().toString();
-//			}
-//			 return "[" + pre + this.getPosition().toString() + nex +"]";
-//		}
 		
 	}
 	
@@ -348,144 +265,124 @@ public class BoundedCube<T> implements Cube<T> {
 	 * @param <E> The type of element held in the List.
 	 *
 	 */
-	private class OrderedLinkedList<E> {
+	private class OrderedPositionalList<E> {
 	
 		private Node<E> header;
 		private Node<E> trailer;
 		private Node<E> cursor;
 		
-		public OrderedLinkedList(int x, int y) {
+		public OrderedPositionalList() {
 			/* [1 pp. 277] */
-			header = new Node<> (new Position(0,0), null, null, null);
-			trailer = new Node<> (new Position(x,y), null, null, null);
+			header = new Node<> (0, null, null, null);
+			trailer = new Node<> (-1, null, null, null);
 			header.setNext(trailer);
 			trailer.setPrevious(header);
 			cursor = header;
 		}
 		
-//		public void show() {
-//			Node<E> currentNode = header;
-//			while (currentNode != null) {
-//				System.out.print(currentNode.toString());
-//				currentNode = currentNode.getNext();
-//			}
-//			System.out.println("");
-//		}
-//		
-//		
-//		public void checkOrder() {
-//			Node<E> currentNode = header;
-//			while (currentNode.getNext() != null) {
-//				Position next = currentNode.getNext().getPosition();
-//				if (currentNode.getPosition().compareTo(next) > 0) {
-//					throw new IndexOutOfBoundsException();
-//				}
-//				currentNode = currentNode.getNext();
-//				
-//			}
-//		}
-		
-		private Node<E> findNode(Position position) {
-			if (position.compareTo(cursor.getPosition()) == 0) {
-				return cursor;
-			} else if (position.compareTo(cursor.getPosition()) < 0) {
-				return findNodeLeft(position);
-			} else {
-				return findNodeRight(position);
-			}
-		}
-		
-		// Find a Node by iterating to the beginning
-		private Node<E> findNodeRight(Position position) {
-			Node<E> currentNode = cursor;
-			while (currentNode != null) {
-				if (position.compareTo(currentNode.getPosition()) == 0) {
-					return currentNode;
-				}
-				cursor = currentNode;
-				currentNode = currentNode.getNext();
-			} 
-			return null;		
-		}
-		
-		// Find a Node by iterating to the end
-		private Node<E> findNodeLeft(Position position) {
-			Node<E> currentNode = cursor;
-			while (currentNode != null) {
-				if (position.compareTo(currentNode.getPosition()) == 0) {
-					return currentNode;
-				}
-				cursor = currentNode;
-				currentNode = currentNode.getPrevious();
-			} 
-			return null;		
-		}
-		
-		// Remove the Node from linked list
-		public void removeNode(Position position) {
-			Node<E> currentNode = this.findNode(position);
-			if (currentNode == header || currentNode == trailer) {
-				return;
-			}
-			if (currentNode != null) {
-				currentNode.getPrevious().setNext(currentNode.getNext());
-				currentNode.getNext().setPrevious(currentNode.getPrevious());
-			}
-		}
-		
-		public E getElement(Position position) {
-			Node<E> node = this.findNode(position);
+		public E getElement(int position) {
+			Node<E> node = this.get(position);
 			if (node != null) {
 				return node.getElement();
+			} else {
+				return null;
 			}
-			return null;
 		}
 		
-		public void setElement(Position position, E element) {
-			Node<E> currentNode = this.findNode(position);
-			if (currentNode == null) {
-				currentNode = this.addNode(position, element);
+		public void setElement(int position, E element) {
+			Node<E> node = this.get(position);
+			if (node != null) {
+				node.setElement(element);
+			}
+		}
+		
+		public Node<E> get(int position) {
+			if (position == cursor.getPosition()) {
+				return cursor;
+			} else if (position < cursor.getPosition()) {
+				return getRight(position);
 			} else {
-				currentNode.setElement(element);
+				return getLeft(position);
+			}
+		}
+		
+		private Node<E> getRight(int position) {
+			Node<E> node = cursor.getNext();
+			while (node != null) {
+				if (position == cursor.getPosition()) {
+					cursor = node;
+					return cursor;
+				}
+				node = node.getNext();
+			} 
+			return null;		
+		}
+
+		private Node<E> getLeft(int position) {
+			Node<E> node = cursor.getPrevious();
+			while (node != null) {
+				if (position == cursor.getPosition()) {
+					cursor = node;
+					return cursor;
+				}
+				node = node.getPrevious();
+			} 
+			return null;		
+		}
+		
+		public void remove(int position) {
+			Node<E> node = this.get(position);
+			if (node == header || node == trailer) {
+				return;
+			}
+			if (node != null) {
+				node.getPrevious().setNext(node.getNext());
+				node.getNext().setPrevious(node.getPrevious());
 			}
 		}
 		
 		// Add a new node after a particular node
-		public Node<E> addNode(Position position, E element) {
-			if (position.compareTo(cursor.getPosition()) >= 0) {
-				return addNodeRight(position, element);
+		public Node<E> add(int position, E element) {
+			if (position == cursor.getPosition()) {
+				return cursor;
+			} else if (position > cursor.getPosition()) {
+				return addRight(position, element);
 			} else {
-				return addNodeLeft(position, element);
+				return addLeft(position, element);
 			}
 		}
 		
 		// Add a new node after a particular node
-		public Node<E> addNodeRight(Position position, E element) {
-			while (cursor != null) {
-				if (cursor.getPosition().compareTo(position) > 0) {
+		private Node<E> addRight(int position, E element) {
+			Node<E> node = cursor.getNext();
+			while (node != null) {
+				if (node.getPosition() > position) {
 					Node<E> newNode = new Node<E>(position, element, null, null);
-					cursor.getPrevious().setNext(newNode);
-					newNode.setNext(cursor);
-					newNode.setPrevious(cursor.getPrevious());
-					cursor.setPrevious(newNode);
-					return newNode;
+					node.getPrevious().setNext(newNode);
+					newNode.setNext(node);
+					newNode.setPrevious(node.getPrevious());
+					node.setPrevious(newNode);
+					cursor = newNode;
+					return cursor;
 				}
-				cursor = cursor.getNext();
+				node = node.getNext();
 			}
 			return null;
 		}
 		
-		public Node<E> addNodeLeft(Position position, E element) {
-			while (cursor != null) {
-				if (cursor.getPosition().compareTo(position) < 0) {
+		private Node<E> addLeft(int position, E element) {
+			Node<E> node = cursor.getPrevious();
+			while (node != null) {
+				if (node.getPosition() < position) {
 					Node<E> newNode = new Node<E>(position, element, null, null);
-					cursor.getNext().setPrevious(newNode);
-					newNode.setPrevious(cursor);
-					newNode.setNext(cursor.getNext());
-					cursor.setNext(newNode);
-					return newNode;
+					node.getNext().setPrevious(newNode);
+					newNode.setPrevious(node);
+					newNode.setNext(node.getNext());
+					node.setNext(newNode);
+					cursor = newNode;
+					return cursor;
 				}
-				cursor = cursor.getPrevious();
+				node = node.getPrevious();
 			}
 			return null;
 		}
@@ -493,9 +390,9 @@ public class BoundedCube<T> implements Cube<T> {
 		// Clear all the List 
 		public void clear() {
 			// link head and tail directly to each other,
-			cursor = header;
 			header.setNext(trailer);
 			trailer.setPrevious(header);
+			cursor = header;
 			header.setElement(null);
 			trailer.setElement(null);
 		}
