@@ -15,10 +15,7 @@ package comp3506.assn1.adts;
  */
 public class BoundedCube<T> implements Cube<T> {
 
-	private final static int MAX_X = 5321;
-	private final static int MAX_Y = 3428;
-	private final static int MAX_Z = 35;
-	private OrderedPositionalList<OrderedPositionalList<OrderedPositionalList<TraversableQueue<T>>>> airSpace;
+	private SortedPositionalList<SortedPositionalList<SortedPositionalList<TraversableQueue<T>>>> airSpace;
 	private int length;
     private int breadth;
     private int height;
@@ -38,7 +35,7 @@ public class BoundedCube<T> implements Cube<T> {
 	 */
 	public BoundedCube(int length, int breadth, int height) throws IllegalArgumentException {
 		// Validate the arguments
-		if ((length <= 0 || breadth <= 0 || height <= 0) || (length > MAX_X || breadth > MAX_Y || height > MAX_Z)) {
+		if (length <= 0 || breadth <= 0 || height <= 0) {
 			throw new IllegalArgumentException();
 		}
 
@@ -46,7 +43,7 @@ public class BoundedCube<T> implements Cube<T> {
 		this.breadth = breadth;
 		this.height = height;
 
-		airSpace = new OrderedPositionalList<>();
+		airSpace = new SortedPositionalList<>();
 
 	}
 
@@ -65,16 +62,23 @@ public class BoundedCube<T> implements Cube<T> {
 	@Override
 	public void add(int x, int y, int z, T element) throws IndexOutOfBoundsException {
 		checkOutOfBound(x, y, z);
+		
+		// If there is no list in the z coordinate then add new List to that layer 
 		if (airSpace.get(z) == null) {
-			airSpace.set(z, new OrderedPositionalList<OrderedPositionalList<TraversableQueue<T>>>());
+			airSpace.set(z, new SortedPositionalList<SortedPositionalList<TraversableQueue<T>>>());
 		}
+		// If there is no list in the y coordinate then add new List to that line
 		if (airSpace.get(z).get(y) == null) {
-			airSpace.get(z).set(y, new OrderedPositionalList<TraversableQueue<T>>());
+			airSpace.get(z).set(y, new SortedPositionalList<TraversableQueue<T>>());
 		}
+		// If there is no queue in the x coordinate then add new queue to that cell 
 		if (airSpace.get(z).get(y).get(x) == null) {
 			airSpace.get(z).get(y).set(x, new TraversableQueue<T>());
 		}
+		
+		// Enqueue the element to the cell
 		airSpace.get(z).get(y).get(x).enqueue(element);
+		
 	}
 
 	/**
@@ -98,6 +102,7 @@ public class BoundedCube<T> implements Cube<T> {
 		if (queue == null) {
 			return null;
 		}
+		// else, return the first item from the iterator
 		return queue.iterator().next();
 	}
 
@@ -229,6 +234,7 @@ public class BoundedCube<T> implements Cube<T> {
 		airSpace.clear();
 	}
 
+	// Check the given coordinate is valid or not
 	private void checkOutOfBound(int x, int y, int z) {
 		if ((x < 0 || y < 0 || z < 0) || (x > this.length || y > this.breadth || z > this.height)) {
 			throw new IndexOutOfBoundsException();
@@ -236,68 +242,20 @@ public class BoundedCube<T> implements Cube<T> {
 	}
 
 	/**
-	 * Nested Node class that holds the element and its position information
-	 *
-	 * @param <E> The type of element held in the Node.
-	 *
-	 */
-	private static class Node<E> {
-
-		private E element;
-		private Node<E> nextNode;
-		private Node<E> previousNode;
-		private int position;
-
-		Node(int position, E element, Node<E> previousNode, Node<E> nextNode) {
-			this.element = element;
-			this.nextNode = nextNode;
-			this.position = position;
-		}
-
-		E getElement() {
-			return element;
-		}
-
-		void setElement(E element) {
-			this.element = element;
-		}
-
-		Node<E> getNext() {
-			return nextNode;
-		}
-
-		Node<E> getPrevious() {
-			return previousNode;
-		}
-
-		void setNext(Node<E> nextNode) {
-			this.nextNode = nextNode;
-		}
-
-		void setPrevious(Node<E> previousNode) {
-			this.previousNode = previousNode;
-		}
-
-		int getPosition() {
-			return position;
-		}
-
-	}
-
-	/**
-	 * Singly Linked List data structure that provides access to its nodes using
-	 * position This class is used to represent a layers of the air space
+	 * A Sorted Linked List data structure that provides access to its nodes using
+	 * position, the nodes are kept sorted by their positions when added into the list
 	 *
 	 * @param <E> The type of element held in the List.
 	 *
 	 */
-	private class OrderedPositionalList<E> {
+	private class SortedPositionalList<E> {
+		// Inspired by Double Linked List and Sorted Priority Queue in [1]
 
 		private Node<E> header;
 		private Node<E> trailer;
 		private Node<E> cursor;
 
-		OrderedPositionalList() {
+		SortedPositionalList() {
 			/* [1 pp. 277] */
 			header = new Node<>(-1, null, null, null);
 			trailer = new Node<>(999999, null, null, null);
@@ -411,6 +369,56 @@ public class BoundedCube<T> implements Cube<T> {
 		}
 	}
 
+
+	/**
+	 * Nested Node class that holds the element and its position information
+	 *
+	 * @param <E> The type of element held in the Node.
+	 *
+	 */
+	private static class Node<E> {
+
+		private E element;
+		private Node<E> nextNode;
+		private Node<E> previousNode;
+		private int position;
+
+		Node(int position, E element, Node<E> previousNode, Node<E> nextNode) {
+			this.element = element;
+			this.nextNode = nextNode;
+			this.position = position;
+		}
+
+		E getElement() {
+			return element;
+		}
+
+		void setElement(E element) {
+			this.element = element;
+		}
+
+		Node<E> getNext() {
+			return nextNode;
+		}
+
+		Node<E> getPrevious() {
+			return previousNode;
+		}
+
+		void setNext(Node<E> nextNode) {
+			this.nextNode = nextNode;
+		}
+
+		void setPrevious(Node<E> previousNode) {
+			this.previousNode = previousNode;
+		}
+
+		int getPosition() {
+			return position;
+		}
+
+	}
+	
 }
 
 /**
@@ -420,27 +428,32 @@ public class BoundedCube<T> implements Cube<T> {
  * by 20000, therefore, we need a data structure that can only hold the
  * information of the cells that contains at least one aircraft. And since the
  * emulator is likely to work on adjacency cells, then we need a method to keep
- * track of the working cell in order to improve the performance of the ADT.
+ * track of the working cell in order to improve the performance of the data 
+ * structure.
  *
  * The approach that I used is to create a 3D Positional Linked List that
- * implements a Positional Doubly Linked List [1] and modified the data
- * structure to I keep it ordered by the position of the node, so that I can use
+ * implements a Positional Doubly Linked List [1 pp. 276] and modified the data
+ * structure to I keep it sorted by the position of the node, so that I can use
  * a cursor to keep track of the current working node in order to reduce the
  * seek time (By using the cursor, the ADT performed a significant improvement
  * in Continuous Access Test, the time of adding 20500 aircrafts into continuous
  * cells is reduced from ~1800ms to ~20ms).
  * 
  * When the last aircraft is removed from the cell, the empty node will be
- * removed from the data structure to make it more memory efficient.
+ * removed from the data structure to make it more memory efficient. This data 
+ * structure has the memory efficiency of O(n) where n is the number of the
+ * aircraft.
  * 
- * One other approach is use a 3D array to store all the cells of the air space,
- * however, it is very memory consuming as we have to pre-allocate memory for
- * every single cell, it also takes time to initialize the system, especially to
- * test a very single case while performing the unit tests.
+ * I tried to implement the Sorted Priority Queue [1 pp. 368] with the key is the
+ * 3D point and the value is the TraversableQueue, the insert method of this data 
+ * structure takes O(n) time, the min() and removeMin() method takes only O(1) time
+ * [1 pp. 368], however, it not add much value in OneSky application because and it 
+ * still takes 0(n) time to to access a random item.
  * 
- * There may be a solution using tree data structure that is much more
- * efficient, however, it would take time to research and implement.
- * 
+ * There is another approach that uses a 3D array to store all the cells of the 
+ * air space, however, it is very memory consuming as we have to pre-allocate memory 
+ * for every single cell, it also takes time to initialize the system.
+ *  
  * REFERENCE
  * [1] M. T. Goodrich, R. Tamassia, and M. H. Goldwasser, Data
  * structures and algorithms in Java. John Wiley & Sons, 2014.

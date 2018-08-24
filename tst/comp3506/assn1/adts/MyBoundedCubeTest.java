@@ -144,12 +144,6 @@ public class MyBoundedCubeTest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testArgumentException() {
-		Cube<Object> testCube = new BoundedCube<>(6000, 6000, 36);
-		testCube.add(1, 1, 1, new Object());
-	}
-
-	@Test(expected = IllegalArgumentException.class)
 	public void testNegativeArgument() {
 		Cube<Object> testCube = new BoundedCube<>(-1, -1, -1);
 		testCube.add(1, 1, 1, new Object());

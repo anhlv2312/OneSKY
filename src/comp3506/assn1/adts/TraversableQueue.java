@@ -16,7 +16,6 @@ import java.util.NoSuchElementException;
  */
 public class TraversableQueue<T> implements IterableQueue<T> {
 
-	private static final int MAX_LENGTH = 20000;
 	private Node<T> head = null;
 	private Node<T> tail = null;
 	private int size = 0;
@@ -41,9 +40,6 @@ public class TraversableQueue<T> implements IterableQueue<T> {
 	 */
 	@Override
 	public void enqueue(T element) throws IllegalStateException {
-
-		if (size() == MAX_LENGTH)
-			throw new IllegalStateException();
 		Node<T> newNode = new Node<>(element, null);
 		if (size == 0)
 			head = newNode;
@@ -86,35 +82,6 @@ public class TraversableQueue<T> implements IterableQueue<T> {
 	}
 
 	/**
-	 * Nested Node class that stores the reference to its element and to the next
-	 * node
-	 *
-	 * @param <E> The type of element held in the Node.
-	 *
-	 */
-	private static class Node<E> {
-		private E element;
-		private Node<E> nextNode;
-
-		Node(E element, Node<E> nextNode) {
-			this.element = element;
-			this.setNext(nextNode);
-		}
-
-		E getElement() {
-			return element;
-		}
-
-		Node<E> getNext() {
-			return nextNode;
-		}
-
-		void setNext(Node<E> nextNode) {
-			this.nextNode = nextNode;
-		}
-	}
-
-	/**
 	 * Nested Iterator class for TraversableQueue
 	 *
 	 * @param <E> The type of element held in the Node.
@@ -143,6 +110,36 @@ public class TraversableQueue<T> implements IterableQueue<T> {
 			return element;
 		}
 	}
+
+	/**
+	 * Nested Node class that stores the reference to its element and to the next
+	 * node
+	 *
+	 * @param <E> The type of element held in the Node.
+	 *
+	 */
+	private static class Node<E> {
+		private E element;
+		private Node<E> nextNode;
+
+		Node(E element, Node<E> nextNode) {
+			this.element = element;
+			this.setNext(nextNode);
+		}
+
+		E getElement() {
+			return element;
+		}
+
+		Node<E> getNext() {
+			return nextNode;
+		}
+
+		void setNext(Node<E> nextNode) {
+			this.nextNode = nextNode;
+		}
+	}
+
 }
 
 /**
@@ -152,13 +149,17 @@ public class TraversableQueue<T> implements IterableQueue<T> {
  * over the queue then I choose to implement a queue use a Singly Linked List
  * [1] as the data structure. They Queue only need to be singly because we only
  * have to iterate one way, from first to last. With this design choice, we can
- * access enqueue and dequeue with the time complexity of O(1)
+ * access enqueue and dequeue with the time complexity of O(1).
+ * 
+ * This data structure has the memory efficiency of O(n) with n is the number of
+ * element stored in the data structure.
  * 
  * There is another approach it that using an array to store information.
  * However it would be more memory consuming and more complicated to implement
  * Iterator.
  * 
- * REFERENCE [1] M. T. Goodrich, R. Tamassia, and M. H. Goldwasser, Data
+ * REFERENCE
+ * [1] M. T. Goodrich, R. Tamassia, and M. H. Goldwasser, Data
  * structures and algorithms in Java. John Wiley & Sons, 2014.
  * 
  */
